@@ -1,0 +1,268 @@
+{
+  "communities": {
+    "0": [
+      "frontend_src_app",
+      "frontend_src_app_app",
+      "frontend_src_app_mainapp",
+      "frontend_src_components_sidebar",
+      "frontend_src_components_sidebar_sidebar",
+      "frontend_src_context_authcontext",
+      "frontend_src_context_authcontext_authcontext",
+      "frontend_src_context_authcontext_authprovider",
+      "frontend_src_main",
+      "frontend_src_pages_dashboard",
+      "frontend_src_pages_dashboard_dashboard",
+      "frontend_src_pages_drivers",
+      "frontend_src_pages_fuelexpenses",
+      "frontend_src_pages_fuelexpenses_fuelexpenses",
+      "frontend_src_pages_login",
+      "frontend_src_pages_login_login",
+      "frontend_src_pages_maintenance",
+      "frontend_src_pages_maintenance_maintenance",
+      "frontend_src_pages_reports",
+      "frontend_src_pages_reports_reports",
+      "frontend_src_pages_trips",
+      "frontend_src_pages_trips_trips",
+      "frontend_src_pages_vehicles",
+      "frontend_src_pages_vehicles_vehicles",
+      "frontend_src_utils_api",
+      "frontend_src_utils_api_api",
+      "frontend_src_utils_api_request"
+    ],
+    "1": [
+      "frontend_package",
+      "frontend_package_dependencies",
+      "frontend_package_dependencies_lucide_react",
+      "frontend_package_dependencies_react",
+      "frontend_package_dependencies_react_dom",
+      "frontend_package_dependencies_recharts",
+      "frontend_package_name",
+      "frontend_package_private",
+      "frontend_package_scripts",
+      "frontend_package_scripts_build",
+      "frontend_package_scripts_dev",
+      "frontend_package_scripts_preview",
+      "frontend_package_type",
+      "frontend_package_version",
+      "lucide_react",
+      "react",
+      "react_dom",
+      "recharts"
+    ],
+    "2": [
+      "backend_package",
+      "backend_package_dependencies",
+      "backend_package_dependencies_bcryptjs",
+      "backend_package_dependencies_express",
+      "backend_package_dependencies_zod",
+      "backend_package_description",
+      "backend_package_main",
+      "backend_package_name",
+      "backend_package_scripts",
+      "backend_package_scripts_dev",
+      "backend_package_scripts_start",
+      "backend_package_type",
+      "backend_package_version",
+      "bcryptjs",
+      "express",
+      "zod"
+    ],
+    "3": [
+      "autoprefixer",
+      "frontend_package_devdependencies",
+      "frontend_package_devdependencies_autoprefixer",
+      "frontend_package_devdependencies_postcss",
+      "frontend_package_devdependencies_tailwindcss",
+      "frontend_package_devdependencies_types_react",
+      "frontend_package_devdependencies_types_react_dom",
+      "frontend_package_devdependencies_vite",
+      "frontend_package_devdependencies_vitejs_plugin_react",
+      "postcss",
+      "tailwindcss",
+      "types_react",
+      "types_react_dom",
+      "vite",
+      "vitejs_plugin_react"
+    ],
+    "4": [
+      "backend_src_middleware_auth",
+      "backend_src_middleware_auth_authenticate",
+      "backend_src_routes_auth",
+      "backend_src_routes_auth_loginschema",
+      "backend_src_utils_jwt",
+      "backend_src_utils_jwt_base64urldecode",
+      "backend_src_utils_jwt_base64urlencode",
+      "backend_src_utils_jwt_signjwt",
+      "backend_src_utils_jwt_verifyjwt"
+    ],
+    "5": [
+      "backend_src_db",
+      "backend_src_db_dbpath",
+      "backend_src_db_dirname",
+      "backend_src_db_filename",
+      "backend_src_db_runtransaction",
+      "backend_src_routes_maintenance",
+      "backend_src_routes_maintenance_maintenanceschema",
+      "backend_src_routes_maintenance_router"
+    ],
+    "6": [
+      "backend_src_db_db",
+      "backend_src_middleware_auth_authorize",
+      "backend_src_routes_drivers",
+      "backend_src_routes_drivers_driverschema",
+      "backend_src_routes_drivers_router",
+      "backend_src_routes_vehicles",
+      "backend_src_routes_vehicles_router",
+      "backend_src_routes_vehicles_vehicleschema"
+    ],
+    "7": [
+      "backend_src_db_initdb",
+      "backend_src_seed",
+      "backend_src_seed_seeddb",
+      "backend_src_utils_crypto",
+      "backend_src_utils_crypto_hashpassword",
+      "backend_src_utils_crypto_verifypassword"
+    ],
+    "8": [
+      "backend_src_routes_auth_router",
+      "backend_src_routes_reports",
+      "backend_src_routes_reports_router",
+      "backend_src_server",
+      "backend_src_server_app"
+    ],
+    "9": [
+      "backend_src_routes_fuelexpenses",
+      "backend_src_routes_fuelexpenses_expenseschema",
+      "backend_src_routes_fuelexpenses_fuellogschema",
+      "backend_src_routes_fuelexpenses_router"
+    ],
+    "10": [
+      "backend_src_routes_trips",
+      "backend_src_routes_trips_router",
+      "backend_src_routes_trips_tripcompleteschema",
+      "backend_src_routes_trips_tripcreateschema"
+    ],
+    "11": [
+      "backend_prisma_seed",
+      "backend_prisma_seed_main",
+      "backend_prisma_seed_prisma"
+    ],
+    "12": [
+      "frontend_postcss_config"
+    ],
+    "13": [
+      "frontend_tailwind_config"
+    ],
+    "14": [
+      "frontend_vite_config"
+    ]
+  },
+  "cohesion": {
+    "0": 0.14245014245014245,
+    "1": 0.1111111111111111,
+    "2": 0.125,
+    "3": 0.13333333333333333,
+    "4": 0.4166666666666667,
+    "5": 0.2857142857142857,
+    "6": 0.2857142857142857,
+    "7": 0.5333333333333333,
+    "8": 0.5,
+    "9": 0.5,
+    "10": 0.5,
+    "11": 0.6666666666666666,
+    "12": 1.0,
+    "13": 1.0,
+    "14": 1.0
+  },
+  "gods": [
+    {
+      "id": "backend_src_db_db",
+      "label": "db",
+      "degree": 9
+    },
+    {
+      "id": "backend_src_middleware_auth_authenticate",
+      "label": "authenticate()",
+      "degree": 9
+    },
+    {
+      "id": "backend_src_middleware_auth_authorize",
+      "label": "authorize()",
+      "degree": 6
+    },
+    {
+      "id": "frontend_src_context_authcontext_authcontext",
+      "label": "AuthContext",
+      "degree": 6
+    },
+    {
+      "id": "backend_src_db_initdb",
+      "label": "initDb()",
+      "degree": 4
+    },
+    {
+      "id": "backend_src_seed_seeddb",
+      "label": "seedDb()",
+      "degree": 4
+    },
+    {
+      "id": "backend_src_utils_jwt_verifyjwt",
+      "label": "verifyJwt()",
+      "degree": 4
+    },
+    {
+      "id": "frontend_package_scripts",
+      "label": "scripts",
+      "degree": 4
+    },
+    {
+      "id": "frontend_src_utils_api_api",
+      "label": "api",
+      "degree": 4
+    },
+    {
+      "id": "backend_package_scripts",
+      "label": "scripts",
+      "degree": 3
+    }
+  ],
+  "surprises": [
+    {
+      "source": "seedDb()",
+      "target": "initDb()",
+      "source_files": [
+        "backend/src/seed.js",
+        "backend/src/db.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "authenticate()",
+      "target": "verifyJwt()",
+      "source_files": [
+        "backend/src/middleware/auth.js",
+        "backend/src/utils/jwt.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    },
+    {
+      "source": "seedDb()",
+      "target": "hashPassword()",
+      "source_files": [
+        "backend/src/seed.js",
+        "backend/src/utils/crypto.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "cross-file semantic connection"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

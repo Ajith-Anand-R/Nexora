@@ -1,0 +1,162 @@
+{
+  "backend/package.json": {
+    "mtime": 1783849095.623026,
+    "ast_hash": "c4e8b753f9d69e8ccaa77457bc24c485",
+    "semantic_hash": "c4e8b753f9d69e8ccaa77457bc24c485"
+  },
+  "backend/prisma/seed.ts": {
+    "mtime": 1783840899.8742914,
+    "ast_hash": "19c14793150456363ed2a215a1034625",
+    "semantic_hash": "19c14793150456363ed2a215a1034625"
+  },
+  "backend/src/db.js": {
+    "mtime": 1783854794.800933,
+    "ast_hash": "cbe620448b728af85e4546143fe1627d",
+    "semantic_hash": "cbe620448b728af85e4546143fe1627d"
+  },
+  "backend/src/middleware/auth.js": {
+    "mtime": 1783849131.06956,
+    "ast_hash": "dc0d5054635e51f527d7f8fc6a0d0726",
+    "semantic_hash": "dc0d5054635e51f527d7f8fc6a0d0726"
+  },
+  "backend/src/routes/auth.js": {
+    "mtime": 1783849215.713056,
+    "ast_hash": "9d55ec01d32374d64046cde9804bab71",
+    "semantic_hash": "9d55ec01d32374d64046cde9804bab71"
+  },
+  "backend/src/routes/drivers.js": {
+    "mtime": 1783849151.031319,
+    "ast_hash": "4fd28fd75bceeed2c318cecd463b532c",
+    "semantic_hash": "4fd28fd75bceeed2c318cecd463b532c"
+  },
+  "backend/src/routes/fuelExpenses.js": {
+    "mtime": 1783849173.3535945,
+    "ast_hash": "92bb853eb11ec58db5e6b496af7ba35c",
+    "semantic_hash": "92bb853eb11ec58db5e6b496af7ba35c"
+  },
+  "backend/src/routes/maintenance.js": {
+    "mtime": 1783849166.095002,
+    "ast_hash": "0bfcd7e20649f395319f6a8e3e208324",
+    "semantic_hash": "0bfcd7e20649f395319f6a8e3e208324"
+  },
+  "backend/src/routes/reports.js": {
+    "mtime": 1783849180.1175401,
+    "ast_hash": "c84eb4eb9bef3e81bc2563c075a1e61a",
+    "semantic_hash": "c84eb4eb9bef3e81bc2563c075a1e61a"
+  },
+  "backend/src/routes/trips.js": {
+    "mtime": 1783854920.3739188,
+    "ast_hash": "1dae4b43a2d76538e3bcda8b08e8a258",
+    "semantic_hash": "1dae4b43a2d76538e3bcda8b08e8a258"
+  },
+  "backend/src/routes/vehicles.js": {
+    "mtime": 1783849143.559103,
+    "ast_hash": "2f4cb7c743b8e7d4cc3f0843f8a999da",
+    "semantic_hash": "2f4cb7c743b8e7d4cc3f0843f8a999da"
+  },
+  "backend/src/seed.js": {
+    "mtime": 1783849209.2702198,
+    "ast_hash": "123078700cbfb7e18d7d8ff51e2a9a9d",
+    "semantic_hash": "123078700cbfb7e18d7d8ff51e2a9a9d"
+  },
+  "backend/src/server.js": {
+    "mtime": 1783849187.497066,
+    "ast_hash": "3a95494818dedf9d3bbcedd13f5b798d",
+    "semantic_hash": "3a95494818dedf9d3bbcedd13f5b798d"
+  },
+  "backend/src/utils/crypto.js": {
+    "mtime": 1783849202.362252,
+    "ast_hash": "5694f8a49966b450164ad36443c57ac0",
+    "semantic_hash": "5694f8a49966b450164ad36443c57ac0"
+  },
+  "backend/src/utils/jwt.js": {
+    "mtime": 1783849125.568902,
+    "ast_hash": "22f99c98c57f39768a73965d9af5bc93",
+    "semantic_hash": "22f99c98c57f39768a73965d9af5bc93"
+  },
+  "frontend/package.json": {
+    "mtime": 1783849274.2862847,
+    "ast_hash": "87db53fbe92b9125fbdc605c8bc709b9",
+    "semantic_hash": "87db53fbe92b9125fbdc605c8bc709b9"
+  },
+  "frontend/postcss.config.js": {
+    "mtime": 1783849523.7195642,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
+  },
+  "frontend/src/App.jsx": {
+    "mtime": 1783849359.25716,
+    "ast_hash": "0573024a72f11aa4dc0813c1d5c56dc7",
+    "semantic_hash": "0573024a72f11aa4dc0813c1d5c56dc7"
+  },
+  "frontend/src/components/Sidebar.jsx": {
+    "mtime": 1783849351.6792436,
+    "ast_hash": "8edf7d8152e76f9ce2610bfe890885f7",
+    "semantic_hash": "8edf7d8152e76f9ce2610bfe890885f7"
+  },
+  "frontend/src/context/AuthContext.jsx": {
+    "mtime": 1783849337.6897607,
+    "ast_hash": "a39c1b1ca7bf7dca6b312f8046f68a74",
+    "semantic_hash": "a39c1b1ca7bf7dca6b312f8046f68a74"
+  },
+  "frontend/src/main.jsx": {
+    "mtime": 1783849306.8980443,
+    "ast_hash": "253d4db42a0b217629b29497cec5becb",
+    "semantic_hash": "253d4db42a0b217629b29497cec5becb"
+  },
+  "frontend/src/pages/Dashboard.jsx": {
+    "mtime": 1783849390.5170581,
+    "ast_hash": "bd7e2989c265d4310e0e9bb081678edf",
+    "semantic_hash": "bd7e2989c265d4310e0e9bb081678edf"
+  },
+  "frontend/src/pages/Drivers.jsx": {
+    "mtime": 1783875994.6818838,
+    "ast_hash": "8a1ca31f009844633569aa329d57fb98",
+    "semantic_hash": "8a1ca31f009844633569aa329d57fb98"
+  },
+  "frontend/src/pages/FuelExpenses.jsx": {
+    "mtime": 1783876090.7630806,
+    "ast_hash": "6e63dc51de1bed6078b943124caf82c7",
+    "semantic_hash": "6e63dc51de1bed6078b943124caf82c7"
+  },
+  "frontend/src/pages/Login.jsx": {
+    "mtime": 1783849372.622446,
+    "ast_hash": "6343ae6b217b959f052d9e75b9949e78",
+    "semantic_hash": "6343ae6b217b959f052d9e75b9949e78"
+  },
+  "frontend/src/pages/Maintenance.jsx": {
+    "mtime": 1783876061.7586558,
+    "ast_hash": "985b78324625f1a2d3fcf3fbcc95d9c9",
+    "semantic_hash": "985b78324625f1a2d3fcf3fbcc95d9c9"
+  },
+  "frontend/src/pages/Reports.jsx": {
+    "mtime": 1783876129.6501322,
+    "ast_hash": "e0aeb79a5065ff78f77ef8b86ff03ab5",
+    "semantic_hash": "e0aeb79a5065ff78f77ef8b86ff03ab5"
+  },
+  "frontend/src/pages/Trips.jsx": {
+    "mtime": 1783876037.6930847,
+    "ast_hash": "5b0684eb699d10d427bdb6fdc530713d",
+    "semantic_hash": "5b0684eb699d10d427bdb6fdc530713d"
+  },
+  "frontend/src/pages/Vehicles.jsx": {
+    "mtime": 1783849410.1338737,
+    "ast_hash": "0dc8930b57127d9b27a5d207bfe90b19",
+    "semantic_hash": "0dc8930b57127d9b27a5d207bfe90b19"
+  },
+  "frontend/src/utils/api.js": {
+    "mtime": 1783849330.1850579,
+    "ast_hash": "a8beff7af4fae5f421d95f1c5cb13135",
+    "semantic_hash": "a8beff7af4fae5f421d95f1c5cb13135"
+  },
+  "frontend/tailwind.config.js": {
+    "mtime": 1783849519.0503676,
+    "ast_hash": "f98a8b3544d5dac22f3d4863a12ca849",
+    "semantic_hash": "f98a8b3544d5dac22f3d4863a12ca849"
+  },
+  "frontend/vite.config.js": {
+    "mtime": 1783849282.5111558,
+    "ast_hash": "9d936cf50f413dc3c1aea471f0456948",
+    "semantic_hash": "9d936cf50f413dc3c1aea471f0456948"
+  }
+}

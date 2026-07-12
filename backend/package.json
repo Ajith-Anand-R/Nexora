@@ -1,0 +1,16 @@
+{
+  "name": "transitops-backend",
+  "version": "1.0.0",
+  "description": "Backend API for TransitOps transport operations application",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.19.2",
+    "zod": "^3.22.4"
+  }
+}
