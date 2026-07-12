@@ -7,14 +7,14 @@ const router = Router();
 // GET /api/reports/dashboard
 router.get('/dashboard', authenticate, (req, res) => {
   try {
-    const totalVehicles = (db.prepare('SELECT COUNT(*) as count FROM Vehicles WHERE status != "Retired"').get()).count;
-    const activeVehicles = (db.prepare('SELECT COUNT(*) as count FROM Vehicles WHERE status = "On Trip"').get()).count;
-    const inShopVehicles = (db.prepare('SELECT COUNT(*) as count FROM Vehicles WHERE status = "In Shop"').get()).count;
-    const retiredVehicles = (db.prepare('SELECT COUNT(*) as count FROM Vehicles WHERE status = "Retired"').get()).count;
+    const totalVehicles = (db.prepare("SELECT COUNT(*) as count FROM Vehicles WHERE status != 'Retired'").get()).count;
+    const activeVehicles = (db.prepare("SELECT COUNT(*) as count FROM Vehicles WHERE status = 'On Trip'").get()).count;
+    const inShopVehicles = (db.prepare("SELECT COUNT(*) as count FROM Vehicles WHERE status = 'In Shop'").get()).count;
+    const retiredVehicles = (db.prepare("SELECT COUNT(*) as count FROM Vehicles WHERE status = 'Retired'").get()).count;
 
-    const activeTrips = (db.prepare('SELECT COUNT(*) as count FROM Trips WHERE status = "Dispatched"').get()).count;
-    const totalDrivers = (db.prepare('SELECT COUNT(*) as count FROM Drivers').get()).count;
-    const activeDrivers = (db.prepare('SELECT COUNT(*) as count FROM Drivers WHERE status = "On Trip"').get()).count;
+    const activeTrips = (db.prepare("SELECT COUNT(*) as count FROM Trips WHERE status = 'Dispatched'").get()).count;
+    const totalDrivers = (db.prepare("SELECT COUNT(*) as count FROM Drivers").get()).count;
+    const activeDrivers = (db.prepare("SELECT COUNT(*) as count FROM Drivers WHERE status = 'On Trip'").get()).count;
 
     const fuelCost = (db.prepare('SELECT SUM(cost) as sum FROM FuelLogs').get()).sum || 0;
     const expenseCost = (db.prepare('SELECT SUM(amount) as sum FROM Expenses').get()).sum || 0;
@@ -70,13 +70,13 @@ router.get('/vehicle-roi', authenticate, (req, res) => {
     // Calculate ROI for each vehicle
     // Revenue = actualDistance * 2.5
     // Costs = FuelLogs cost + Expenses amount
-    const vehicles = db.prepare('SELECT id, registrationNumber, nameModel, acquisitionCost, odometer FROM Vehicles WHERE status != "Retired"').all();
+    const vehicles = db.prepare("SELECT id, registrationNumber, nameModel, acquisitionCost, odometer FROM Vehicles WHERE status != 'Retired'").all();
 
     const roiData = vehicles.map(v => {
       const fuel = (db.prepare('SELECT SUM(cost) as sum FROM FuelLogs WHERE vehicleId = ?').get(v.id)).sum || 0;
       const expenses = (db.prepare('SELECT SUM(amount) as sum FROM Expenses WHERE vehicleId = ?').get(v.id)).sum || 0;
       
-      const tripStats = db.prepare('SELECT SUM(actualDistance) as dist FROM Trips WHERE vehicleId = ? AND status = "Completed"').get(v.id);
+      const tripStats = db.prepare("SELECT SUM(actualDistance) as dist FROM Trips WHERE vehicleId = ? AND status = 'Completed'").get(v.id);
       const distance = tripStats?.dist || 0;
       const revenue = distance * 2.5;
       const cost = fuel + expenses;

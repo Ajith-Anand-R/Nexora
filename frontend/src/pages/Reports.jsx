@@ -1,12 +1,25 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api.js';
-import { AuthContext } from '../context/AuthContext.jsx';
-import { Download, BarChart2, ShieldCheck, DollarSign } from 'lucide-react';
+import { Download, BarChart2, ShieldCheck, TrendingUp, TrendingDown } from 'lucide-react';
+
+const fmt = (n) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n || 0);
+
+function MetricBar({ label, value, max, color }) {
+  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
+  return (
+    <div className="space-y-1.5">
+      <div className="flex justify-between text-xs">
+        <span className="text-slate-600 font-medium">{label}</span>
+        <span className="font-bold text-slate-800">{value}</span>
+      </div>
+      <div className="progress-track h-2">
+        <div className="h-full rounded-full transition-all duration-1000" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
+  );
+}
 
 export default function Reports() {
-  const { user } = useContext(AuthContext);
-  const isSafetyOfficer = user?.role === 'SafetyOfficer';
-
   const [metrics, setMetrics] = useState(null);
   const [utilization, setUtilization] = useState(null);
   const [roiData, setRoiData] = useState([]);
@@ -16,16 +29,15 @@ export default function Reports() {
 
   const fetchReports = async () => {
     try {
-      setLoading(true);
-      setError('');
-      const [dashData, utilData, roiDataResponse] = await Promise.all([
+      setLoading(true); setError('');
+      const [dashData, utilData, roi] = await Promise.all([
         api.get('/api/reports/dashboard'),
         api.get('/api/reports/fleet-utilization'),
         api.get('/api/reports/vehicle-roi')
       ]);
       setMetrics(dashData.metrics);
       setUtilization(utilData);
-      setRoiData(roiDataResponse);
+      setRoiData(roi);
     } catch (err) {
       setError(err.message || 'Failed to fetch reports');
     } finally {
@@ -33,9 +45,7 @@ export default function Reports() {
     }
   };
 
-  useEffect(() => {
-    fetchReports();
-  }, []);
+  useEffect(() => { fetchReports(); }, []);
 
   const handleCsvExport = async () => {
     try {
@@ -44,168 +54,209 @@ export default function Reports() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `TransitOps_${exportType}_Report_${new Date().toISOString().split('T')[0]}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      link.setAttribute('download', `Nexora_${exportType}_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
     } catch (err) {
-      setError('Failed to export CSV report');
+      setError('Failed to export CSV');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-6">
+        <div className="fade-up">
+          <div className="skeleton h-8 w-64 mb-2" />
+          <div className="skeleton h-4 w-80" />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => <div key={i} className="skeleton h-32 rounded-2xl" />)}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="skeleton h-80 rounded-2xl lg:col-span-2" />
+          <div className="skeleton h-80 rounded-2xl" />
+        </div>
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
-        {error}
-      </div>
-    );
+    return <div className="p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-sm">{error}</div>;
   }
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
+  const kpis = [
+    { label: 'Total Operating Spend', value: fmt(metrics?.totalCost), sub: 'Fuel + Expenses', icon: '💰', color: 'from-indigo-500 to-violet-500' },
+    { label: 'Fleet Utilization', value: `${metrics?.utilization || 0}%`, sub: `${metrics?.activeVehicles || 0} of ${metrics?.totalVehicles || 0} active`, icon: '📊', color: 'from-cyan-500 to-sky-500' },
+    { label: 'Active Trips', value: metrics?.activeTrips || 0, sub: 'Dispatched deliveries', icon: '🚛', color: 'from-emerald-500 to-teal-500' },
+    { label: 'Vehicles In Shop', value: metrics?.inShopVehicles || 0, sub: 'Under maintenance', icon: '🔧', color: 'from-amber-500 to-orange-500' },
+  ];
+
+  const maxRegionCount = Math.max(...(utilization?.tripsByRegion?.map(r => r.count) || [1]));
+  const regionColors = ['linear-gradient(90deg, #6366f1, #8b5cf6)', 'linear-gradient(90deg, #06b6d4, #0ea5e9)', 'linear-gradient(90deg, #10b981, #14b8a6)', 'linear-gradient(90deg, #f59e0b, #f97316)'];
 
   return (
-    <div className="space-y-8">
-      {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 fade-up">
         <div>
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">Compliance & Analytics</h2>
-          <p className="text-sm text-slate-400">Compliance audit summaries and operational performance analysis.</p>
+          <h2 className="text-3xl font-display font-bold text-slate-900">
+            Analytics & <span className="gradient-text">Reports</span>
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">Operational performance analysis and compliance summaries.</p>
         </div>
-        <div className="flex gap-2 w-full sm:w-auto">
+        <div className="flex gap-2 flex-wrap">
           <select
-            value={exportType}
-            onChange={(e) => setExportType(e.target.value)}
-            className="px-3 py-2 bg-slate-900 border border-slate-800 rounded-lg text-slate-200 text-xs focus:outline-none focus:border-blue-500"
+            value={exportType} onChange={(e) => setExportType(e.target.value)}
+            className="select-premium text-sm"
           >
-            <option value="vehicles">Export Vehicles CSV</option>
-            <option value="drivers">Export Drivers CSV</option>
-            <option value="trips">Export Trips CSV</option>
+            <option value="vehicles">Vehicles CSV</option>
+            <option value="drivers">Drivers CSV</option>
+            <option value="trips">Trips CSV</option>
           </select>
-          <button
-            onClick={handleCsvExport}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold shadow-lg active:translate-y-[1px] transition-all duration-150"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
+          <button onClick={handleCsvExport} className="btn-primary cursor-pointer text-sm">
+            <Download className="h-4 w-4" /> Export
           </button>
         </div>
       </div>
 
-      {/* KPI Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Total Operating Spend</div>
-          <div className="text-2xl font-black text-white mb-1">{formatCurrency(metrics?.totalCost || 0)}</div>
-          <div className="text-xs text-slate-500 font-medium">Fuel purchases + Auxiliary expenses</div>
-        </div>
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Fleet Utilization</div>
-          <div className="text-2xl font-bold text-blue-400 mb-1">{metrics?.utilization || 0}%</div>
-          <div className="text-xs text-slate-500 font-medium">{metrics?.activeVehicles || 0} of {metrics?.totalVehicles || 0} active vehicles</div>
-        </div>
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Active Trips</div>
-          <div className="text-2xl font-bold text-indigo-400 mb-1">{metrics?.activeTrips || 0}</div>
-          <div className="text-xs text-slate-500 font-medium">Dispatched cargo deliveries</div>
-        </div>
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80">
-          <div className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Vehicles In Shop</div>
-          <div className="text-2xl font-bold text-amber-500 mb-1">{metrics?.inShopVehicles || 0}</div>
-          <div className="text-xs text-slate-500 font-medium">Active repairs or tuning</div>
-        </div>
+      {/* KPIs */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 fade-up-1">
+        {kpis.map((k, i) => (
+          <div
+            key={k.label}
+            className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+            style={{ animation: `fade-up 0.6s ${i * 60}ms cubic-bezier(0.23,1,0.32,1) both` }}
+          >
+            <div
+              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.color} flex items-center justify-center text-xl mb-3`}
+              style={{ boxShadow: '0 4px 12px -4px rgba(99,102,241,0.35)' }}
+            >
+              {k.icon}
+            </div>
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono mb-1">{k.label}</div>
+            <div className="text-2xl font-display font-bold text-slate-900 mb-0.5">{k.value}</div>
+            <div className="text-xs text-slate-400">{k.sub}</div>
+          </div>
+        ))}
       </div>
 
-      {/* Grid for Vehicle ROI Metrics & Fleet Details */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Vehicle ROI Analysis (2 cols) */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80 lg:col-span-2 space-y-4">
-          <div className="flex items-center gap-2">
-            <BarChart2 className="h-5 w-5 text-blue-500" />
-            <h3 className="text-lg font-bold text-white">Asset ROI & Profitability Analysis</h3>
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* ROI Table */}
+        <div className="glass rounded-2xl border border-slate-100 overflow-hidden lg:col-span-2 fade-up">
+          <div className="px-6 py-4 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(226,232,240,0.8)' }}>
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+              <BarChart2 className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h3 className="font-display font-bold text-slate-900 text-sm">Asset ROI & Profitability</h3>
+              <p className="text-xs text-slate-400">Revenue vs. operating costs per vehicle</p>
+            </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-slate-800/60 bg-slate-950/20 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
-                  <th className="p-3">Vehicle</th>
-                  <th className="p-3">Odometer</th>
-                  <th className="p-3">Distance</th>
-                  <th className="p-3">Revenue</th>
-                  <th className="p-3">Operating Cost</th>
-                  <th className="p-3">Net Profit</th>
-                  <th className="p-3 text-right">ROI</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/30 text-slate-300">
-                {roiData.map((v) => (
-                  <tr key={v.registrationNumber} className="hover:bg-slate-800/20 transition-colors">
-                    <td className="p-3">
-                      <div className="font-mono font-semibold text-white">{v.registrationNumber}</div>
-                      <div className="text-[10px] text-slate-500">{v.nameModel}</div>
-                    </td>
-                    <td className="p-3">{v.odometer ? `${v.odometer.toLocaleString()} km` : '0 km'}</td>
-                    <td className="p-3">{v.distance ? `${v.distance.toLocaleString()} km` : '0 km'}</td>
-                    <td className="p-3 text-slate-400">{formatCurrency(v.revenue)}</td>
-                    <td className="p-3 text-slate-400">{formatCurrency(v.cost)}</td>
-                    <td className={`p-3 font-semibold ${v.profit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {formatCurrency(v.profit)}
-                    </td>
-                    <td className={`p-3 text-right font-bold ${v.roi >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {v.roi}%
-                    </td>
+            {roiData.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 text-sm">No ROI data available.</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-slate-50/80 text-[10px] font-bold text-slate-400 uppercase tracking-wider font-mono" style={{ borderBottom: '1px solid rgba(226,232,240,0.8)' }}>
+                    <th className="px-5 py-3 text-left">Vehicle</th>
+                    <th className="px-5 py-3 text-left">Odometer</th>
+                    <th className="px-5 py-3 text-left">Distance</th>
+                    <th className="px-5 py-3 text-left">Revenue</th>
+                    <th className="px-5 py-3 text-left">Cost</th>
+                    <th className="px-5 py-3 text-left">Net Profit</th>
+                    <th className="px-5 py-3 text-right">ROI</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {roiData.map((v, i) => (
+                    <tr
+                      key={v.registrationNumber}
+                      className="hover:bg-indigo-50/40 transition-colors"
+                      style={{ animation: `fade-up 0.5s ${i * 30}ms cubic-bezier(0.23,1,0.32,1) both` }}
+                    >
+                      <td className="px-5 py-3.5">
+                        <div className="font-mono font-bold text-indigo-600 text-xs">{v.registrationNumber}</div>
+                        <div className="text-[10px] text-slate-400 mt-0.5">{v.nameModel}</div>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-600 text-xs">{v.odometer ? `${v.odometer.toLocaleString()} km` : '0 km'}</td>
+                      <td className="px-5 py-3.5 text-slate-600 text-xs">{v.distance ? `${v.distance.toLocaleString()} km` : '0 km'}</td>
+                      <td className="px-5 py-3.5 text-slate-600 text-xs">{fmt(v.revenue)}</td>
+                      <td className="px-5 py-3.5 text-slate-600 text-xs">{fmt(v.cost)}</td>
+                      <td className={`px-5 py-3.5 font-bold text-xs ${v.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        <div className="flex items-center gap-1">
+                          {v.profit >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                          {fmt(v.profit)}
+                        </div>
+                      </td>
+                      <td className={`px-5 py-3.5 text-right font-bold text-sm ${v.roi >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {v.roi}%
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
 
-        {/* Regional & Status Distribution (1 col) */}
-        <div className="glass-panel p-6 rounded-2xl border border-slate-800/80 space-y-6">
+        {/* Right Panel */}
+        <div className="space-y-5 fade-up">
           {/* Trips by Region */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-500" />
-              <h3 className="text-base font-bold text-white">Trips By Region</h3>
+          <div className="glass rounded-2xl border border-slate-100 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
+                <ShieldCheck className="h-3.5 w-3.5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-slate-900 text-sm">Trips by Region</h3>
+              </div>
             </div>
-            <div className="divide-y divide-slate-800/40 text-xs">
-              {utilization?.tripsByRegion.map((region) => (
-                <div key={region.region} className="flex justify-between py-2">
-                  <span className="text-slate-400 capitalize">{region.region}</span>
-                  <span className="font-semibold text-white">{region.count} trips</span>
-                </div>
-              ))}
-              {(!utilization?.tripsByRegion || utilization.tripsByRegion.length === 0) && (
-                <div className="text-slate-500 py-2 text-center">No regions logged yet.</div>
+            <div className="space-y-3">
+              {utilization?.tripsByRegion?.length ? (
+                utilization.tripsByRegion.map((r, i) => (
+                  <MetricBar
+                    key={r.region}
+                    label={r.region}
+                    value={`${r.count} trips`}
+                    max={maxRegionCount}
+                    color={regionColors[i % regionColors.length]}
+                  />
+                ))
+              ) : (
+                <div className="text-slate-400 text-sm text-center py-4">No region data yet.</div>
               )}
             </div>
           </div>
 
-          {/* Vehicles by Type / Status */}
-          <div className="space-y-3 pt-4 border-t border-slate-800">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-indigo-500" />
-              <h3 className="text-base font-bold text-white">Asset Availability</h3>
+          {/* Asset Availability */}
+          <div className="glass rounded-2xl border border-slate-100 p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
+                <BarChart2 className="h-3.5 w-3.5 text-white" />
+              </div>
+              <h3 className="font-display font-bold text-slate-900 text-sm">Asset Availability</h3>
             </div>
-            <div className="divide-y divide-slate-800/40 text-xs">
-              {utilization?.vehicles.map((v, i) => (
-                <div key={i} className="flex justify-between py-2">
-                  <span className="text-slate-400">{v.type} ({v.status})</span>
-                  <span className="font-semibold text-white">{v.count} units</span>
-                </div>
-              ))}
-              {(!utilization?.vehicles || utilization.vehicles.length === 0) && (
-                <div className="text-slate-500 py-2 text-center">No active vehicles.</div>
+            <div className="space-y-2">
+              {utilization?.vehicles?.length ? (
+                utilization.vehicles.map((v, i) => (
+                  <div key={i} className="flex items-center justify-between py-2" style={{ borderBottom: i < utilization.vehicles.length - 1 ? '1px solid rgba(226,232,240,0.6)' : 'none' }}>
+                    <div>
+                      <span className="text-xs font-semibold text-slate-700">{v.type}</span>
+                      <span className="ml-1.5">
+                        <span className={`badge text-[9px] ${
+                          v.status === 'Available' ? 'badge-emerald'
+                            : v.status === 'On Trip' ? 'badge-cyan'
+                            : v.status === 'In Shop' ? 'badge-amber'
+                            : 'badge-slate'
+                        }`}>{v.status}</span>
+                      </span>
+                    </div>
+                    <span className="font-bold text-slate-900 text-sm">{v.count}</span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-slate-400 text-sm text-center py-4">No vehicle data.</div>
               )}
             </div>
           </div>

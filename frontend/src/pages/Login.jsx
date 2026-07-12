@@ -1,128 +1,333 @@
 import React, { useState, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext.jsx';
 
+const DEMO_ACCOUNTS = [
+  {
+    role: 'Fleet Manager',
+    email: 'manager@transitops.com',
+    password: 'manager123',
+    icon: '🚛',
+    color: 'from-emerald-500 to-teal-500',
+    bg: 'bg-emerald-50',
+    border: 'border-emerald-100',
+    text: 'text-emerald-700',
+  },
+  {
+    role: 'Dispatcher',
+    email: 'dispatcher@transitops.com',
+    password: 'driver123',
+    icon: '📡',
+    color: 'from-cyan-500 to-sky-500',
+    bg: 'bg-cyan-50',
+    border: 'border-cyan-100',
+    text: 'text-cyan-700',
+  },
+  {
+    role: 'Safety Officer',
+    email: 'safety@transitops.com',
+    password: 'safety123',
+    icon: '🛡️',
+    color: 'from-amber-500 to-orange-500',
+    bg: 'bg-amber-50',
+    border: 'border-amber-100',
+    text: 'text-amber-700',
+  },
+  {
+    role: 'Financial Analyst',
+    email: 'finance@transitops.com',
+    password: 'finance123',
+    icon: '📊',
+    color: 'from-violet-500 to-purple-500',
+    bg: 'bg-violet-50',
+    border: 'border-violet-100',
+    text: 'text-violet-700',
+  },
+];
+
+const STATS = [
+  { label: 'Active Vehicles', value: '120+' },
+  { label: 'Daily Trips',     value: '450+' },
+  { label: 'Fleet Uptime',    value: '99.2%' },
+];
+
+function FeaturePill({ icon, text, delay = 0 }) {
+  return (
+    <div
+      className="flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-4 py-2 text-white/90 text-sm font-medium border border-white/25 fade-up"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      <span>{icon}</span>
+      <span>{text}</span>
+    </div>
+  );
+}
+
 export default function Login() {
   const { login } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [selectedDemo, setSelectedDemo] = useState(null);
+
+  // Consume prefilled demo credentials from landing page
+  React.useEffect(() => {
+    const prefilledEmail = sessionStorage.getItem('prefilled_email');
+    const prefilledPassword = sessionStorage.getItem('prefilled_password');
+    const prefilledRole = sessionStorage.getItem('prefilled_role');
+    if (prefilledEmail && prefilledPassword) {
+      setEmail(prefilledEmail);
+      setPassword(prefilledPassword);
+      setSelectedDemo(prefilledRole);
+      sessionStorage.removeItem('prefilled_email');
+      sessionStorage.removeItem('prefilled_password');
+      sessionStorage.removeItem('prefilled_role');
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       await login(email, password);
-      // Redirect happens automatically in AuthContext listener
     } catch (err) {
-      setError(err.message || 'Invalid email or password');
+      setError(err.message || 'Invalid email or password. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDemoLogin = (demoEmail, demoPassword) => {
-    setEmail(demoEmail);
-    setPassword(demoPassword);
+  const handleDemoSelect = (account) => {
+    setSelectedDemo(account.role);
+    setEmail(account.email);
+    setPassword(account.password);
+    setError('');
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-      {/* Brand Header */}
-      <div className="mb-8 flex items-center gap-3">
-        <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-blue-500/20">
-          T
+    <div className="min-h-screen flex overflow-hidden" style={{ background: '#f8fafc' }}>
+      {/* ── Left Panel: Immersive 3D Visual ─────────────── */}
+      <div
+        className="hidden lg:flex lg:w-[55%] relative flex-col items-center justify-center p-12 overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 40%, #0891b2 100%)',
+        }}
+      >
+        {/* Background mesh orbs */}
+        <div className="absolute inset-0" aria-hidden="true">
+          <div className="absolute top-0 left-0 w-96 h-96 rounded-full opacity-20"
+            style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)', animation: 'orb-float-1 14s ease-in-out infinite' }} />
+          <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full opacity-15"
+            style={{ background: 'radial-gradient(circle, rgba(6,182,212,0.5) 0%, transparent 70%)', animation: 'orb-float-2 18s ease-in-out infinite' }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-10"
+            style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.5) 0%, transparent 70%)', animation: 'orb-float-3 22s ease-in-out infinite' }} />
         </div>
-        <h1 className="text-2xl font-black tracking-tight text-white">
-          Transit<span className="text-blue-500">Ops</span>
-        </h1>
+
+        {/* Grid overlay */}
+        <div className="absolute inset-0 opacity-[0.06]"
+          style={{ backgroundImage: 'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)', backgroundSize: '40px 40px' }}
+          aria-hidden="true" />
+
+        {/* Content */}
+        <div className="relative z-10 text-center">
+          {/* 3D Floating Logo Icon */}
+          <div className="inline-flex mb-8 float-card">
+            <div
+              className="w-20 h-20 rounded-3xl flex items-center justify-center"
+              style={{
+                background: 'rgba(255,255,255,0.18)',
+                backdropFilter: 'blur(16px)',
+                border: '1.5px solid rgba(255,255,255,0.3)',
+                boxShadow: '0 20px 40px -8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4)',
+              }}
+            >
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+          </div>
+
+          <h1 className="text-5xl font-display font-black text-white mb-4 tracking-tight fade-up">
+            Nexora
+          </h1>
+          <p className="text-white/70 text-lg font-medium mb-12 max-w-sm mx-auto fade-up-1">
+            Enterprise fleet operations powered by real-time intelligence
+          </p>
+
+          {/* Feature pills */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            <FeaturePill icon="🚚" text="Fleet Tracking" delay={200} />
+            <FeaturePill icon="⚡" text="Real-time Data" delay={300} />
+            <FeaturePill icon="📊" text="Analytics" delay={400} />
+            <FeaturePill icon="🔒" text="Role-based Access" delay={500} />
+          </div>
+
+          {/* Stats row */}
+          <div className="grid grid-cols-3 gap-4 fade-up-4">
+            {STATS.map((s) => (
+              <div
+                key={s.label}
+                className="rounded-2xl p-4 text-center"
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }}
+              >
+                <div className="text-2xl font-display font-bold text-white">{s.value}</div>
+                <div className="text-white/60 text-xs font-medium mt-0.5">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Glassmorphism Card */}
-      <div className="w-full max-w-md p-8 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-xl shadow-2xl">
-        <h2 className="text-xl font-bold text-white mb-2 text-center">Welcome Back</h2>
-        <p className="text-xs text-slate-500 text-center mb-6">Log in to manage vehicles, drivers, and trips.</p>
-
-        {error && (
-          <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-medium">
-            {error}
+      {/* ── Right Panel: Login Form ──────────────────────── */}
+      <div className="flex-1 flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-y-auto">
+        {/* Mobile brand */}
+        <div className="lg:hidden flex items-center gap-2 mb-8">
+          <div className="w-8 h-8 rounded-xl grad-primary flex items-center justify-center">
+            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+            </svg>
           </div>
-        )}
+          <span className="font-display font-black text-xl gradient-text">Nexora</span>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Email Address
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="manager@transitops.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-2.5 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-              placeholder="••••••••"
-            />
+        <div className="w-full max-w-md">
+          {/* Form Header */}
+          <div className="mb-8 fade-up flex justify-between items-start">
+            <div>
+              <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">Welcome back</h2>
+              <p className="text-slate-500 text-sm">Sign in to your logistics dashboard</p>
+            </div>
+            <button
+              onClick={() => window.location.hash = '#home'}
+              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100/30 px-3 py-1.5 rounded-xl"
+            >
+              ← Back to Home
+            </button>
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold tracking-wide shadow-lg shadow-blue-600/20 active:translate-y-[1px] disabled:opacity-50 disabled:pointer-events-none transition-all duration-150"
-          >
-            {loading ? 'Logging in...' : 'Sign In'}
-          </button>
-        </form>
+          {/* Error */}
+          {error && (
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-3 fade-in">
+              <svg className="w-4 h-4 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span className="text-rose-700 text-sm font-medium">{error}</span>
+            </div>
+          )}
 
-        {/* Demo Credentials */}
-        <div className="mt-8 pt-6 border-t border-slate-800/80">
-          <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-            Quick Demo Logins
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-4 fade-up-1">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+                Email Address
+              </label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-premium"
+                placeholder="you@transitops.com"
+                autoComplete="email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="input-premium pr-10"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+                >
+                  {showPassword ? (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
             <button
-              onClick={() => handleDemoLogin('manager@transitops.com', 'manager123')}
-              className="p-2 text-left rounded bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800/40 transition-colors"
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full py-3 mt-2"
             >
-              <div className="font-semibold text-slate-200">Fleet Manager</div>
-              <div className="text-slate-500">manager@transitops.com</div>
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  Sign In to Dashboard
+                </>
+              )}
             </button>
-            <button
-              onClick={() => handleDemoLogin('dispatcher@transitops.com', 'driver123')}
-              className="p-2 text-left rounded bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800/40 transition-colors"
-            >
-              <div className="font-semibold text-slate-200">Dispatcher (Driver Role)</div>
-              <div className="text-slate-500">dispatcher@transitops.com</div>
-            </button>
-            <button
-              onClick={() => handleDemoLogin('safety@transitops.com', 'safety123')}
-              className="p-2 text-left rounded bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800/40 transition-colors"
-            >
-              <div className="font-semibold text-slate-200">Safety Officer</div>
-              <div className="text-slate-500">safety@transitops.com</div>
-            </button>
-            <button
-              onClick={() => handleDemoLogin('finance@transitops.com', 'finance123')}
-              className="p-2 text-left rounded bg-slate-950 border border-slate-800 text-slate-300 hover:bg-slate-800/40 transition-colors"
-            >
-              <div className="font-semibold text-slate-200">Financial Analyst</div>
-              <div className="text-slate-500">finance@transitops.com</div>
-            </button>
+          </form>
+
+          {/* Demo Logins */}
+          <div className="mt-8 fade-up-2">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex-1 h-px bg-slate-200" />
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Demo</span>
+              <div className="flex-1 h-px bg-slate-200" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {DEMO_ACCOUNTS.map((acc) => (
+                <button
+                  key={acc.role}
+                  type="button"
+                  onClick={() => handleDemoSelect(acc)}
+                  className={`group text-left p-3 rounded-xl border transition-all duration-200 cursor-pointer ${acc.bg} ${acc.border} hover:shadow-premium hover:-translate-y-0.5 ${selectedDemo === acc.role ? 'ring-2 ring-indigo-300' : ''}`}
+                >
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center shadow-sm`}>
+                      <span className="text-xs">{acc.icon}</span>
+                    </div>
+                    <span className={`text-xs font-bold ${acc.text} font-mono`}>{acc.role}</span>
+                  </div>
+                  <div className="text-[10px] text-slate-500 truncate font-mono">{acc.email}</div>
+                  {selectedDemo === acc.role && (
+                    <div className="text-[9px] text-indigo-500 font-semibold mt-1">✓ Selected</div>
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {selectedDemo && (
+              <p className="text-center text-xs text-slate-500 mt-3 fade-in">
+                Credentials filled — click <strong>Sign In</strong> to continue
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -3,125 +3,298 @@ import { api } from '../utils/api.js';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { Truck, Users, Compass, AlertCircle, TrendingUp, DollarSign } from 'lucide-react';
 
+function PageHeader({ user }) {
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const name = user?.name?.split(' ')[0] || 'there';
+
+  return (
+    <div className="fade-up mb-8">
+      <div className="flex items-start justify-between flex-wrap gap-4">
+        <div>
+          <p className="text-slate-500 text-sm font-medium mb-1">{greeting}, {name} 👋</p>
+          <h2 className="text-3xl font-display font-bold text-slate-900">
+            Operations <span className="gradient-text">Dashboard</span>
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          </p>
+        </div>
+        <div
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold font-mono text-emerald-700 fade-in"
+          style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.2)' }}
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          System Online
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="glass rounded-2xl p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="skeleton h-3 w-28" />
+        <div className="skeleton w-10 h-10 rounded-xl" />
+      </div>
+      <div className="skeleton h-8 w-20 mb-2" />
+      <div className="skeleton h-3 w-36" />
+    </div>
+  );
+}
+
+const CARD_CONFIG = [
+  {
+    key: 'activeVehicles',
+    name: 'Active Vehicles',
+    getSubtitle: (m) => `${m.totalVehicles - m.activeVehicles} available`,
+    Icon: Truck,
+    gradClass: 'from-cyan-500 to-sky-500',
+    textColor: 'text-sky-600',
+    bgColor: 'bg-sky-50',
+    borderColor: 'border-sky-100',
+    glow: 'rgba(14,165,233,0.2)',
+    delay: '0ms',
+  },
+  {
+    key: 'activeTrips',
+    name: 'Active Trips',
+    getSubtitle: () => 'Currently dispatched',
+    Icon: Compass,
+    gradClass: 'from-indigo-500 to-violet-500',
+    textColor: 'text-indigo-600',
+    bgColor: 'bg-indigo-50',
+    borderColor: 'border-indigo-100',
+    glow: 'rgba(99,102,241,0.2)',
+    delay: '50ms',
+  },
+  {
+    key: 'inShopVehicles',
+    name: 'In Maintenance',
+    getSubtitle: () => 'Fleet under service',
+    Icon: AlertCircle,
+    gradClass: 'from-amber-500 to-orange-500',
+    textColor: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-100',
+    glow: 'rgba(245,158,11,0.2)',
+    delay: '100ms',
+  },
+  {
+    key: 'activeDrivers',
+    name: 'Active Drivers',
+    getSubtitle: (m) => `${m.totalDrivers} drivers total`,
+    Icon: Users,
+    gradClass: 'from-emerald-500 to-teal-500',
+    textColor: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-100',
+    glow: 'rgba(16,185,129,0.2)',
+    delay: '150ms',
+  },
+  {
+    key: 'totalCost',
+    name: 'Est. Expenditures',
+    format: (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(v),
+    getSubtitle: () => 'Fuel & toll totals',
+    Icon: DollarSign,
+    gradClass: 'from-rose-500 to-pink-500',
+    textColor: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-100',
+    glow: 'rgba(239,68,68,0.2)',
+    delay: '200ms',
+  },
+  {
+    key: 'utilization',
+    name: 'Fleet Utilization',
+    format: (v) => `${v}%`,
+    getSubtitle: () => 'Active vs. total fleet',
+    Icon: TrendingUp,
+    gradClass: 'from-violet-500 to-purple-500',
+    textColor: 'text-violet-600',
+    bgColor: 'bg-violet-50',
+    borderColor: 'border-violet-100',
+    glow: 'rgba(139,92,246,0.2)',
+    delay: '250ms',
+  },
+];
+
+function KpiCard({ config, value, subtitle }) {
+  const { Icon, name, gradClass, bgColor, borderColor, glow, delay } = config;
+  const displayValue = config.format ? config.format(value) : value;
+
+  return (
+    <div
+      className={`glass rounded-2xl p-6 card-3d border ${borderColor} cursor-pointer`}
+      style={{ animationDelay: delay, animation: `fade-up 0.6s ${delay} cubic-bezier(0.23,1,0.32,1) both` }}
+    >
+      <div className="flex items-start justify-between mb-4">
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono leading-tight">{name}</span>
+        <div
+          className={`w-11 h-11 rounded-xl bg-gradient-to-br ${gradClass} flex items-center justify-center flex-shrink-0`}
+          style={{ boxShadow: `0 4px 12px -2px ${glow}` }}
+        >
+          <Icon className="h-5 w-5 text-white" />
+        </div>
+      </div>
+      <div className="text-3xl font-display font-bold text-slate-900 mb-1 count-up" style={{ animation: 'count-up 0.5s ease both' }}>
+        {displayValue}
+      </div>
+      <div className="text-xs text-slate-500 font-medium">{subtitle}</div>
+
+      {/* Bottom accent line */}
+      <div className={`mt-4 h-0.5 w-12 rounded-full bg-gradient-to-r ${gradClass}`} />
+    </div>
+  );
+}
+
+function OperationsPanel({ metrics }) {
+  const available = metrics.totalVehicles - metrics.activeVehicles - metrics.inShopVehicles;
+  const utilPct = metrics.utilization ?? 0;
+  const driverPct = metrics.totalDrivers > 0 ? Math.round((metrics.activeDrivers / metrics.totalDrivers) * 100) : 0;
+
+  return (
+    <div className="glass rounded-2xl p-6 fade-up-5 border border-slate-100">
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-lg font-display font-bold text-slate-900">Operations Overview</h3>
+        <span className="badge badge-primary">Live</span>
+      </div>
+      <p className="text-slate-500 text-xs mb-6">Real-time fleet status and capacity breakdown</p>
+
+      <div className="grid grid-cols-3 gap-6 mb-8">
+        {[
+          { label: 'Available', value: available, color: 'text-emerald-600', ring: 'from-emerald-500 to-teal-500' },
+          { label: 'On Road', value: metrics.activeVehicles, color: 'text-sky-600', ring: 'from-cyan-500 to-sky-500' },
+          { label: 'In Shop', value: metrics.inShopVehicles, color: 'text-amber-600', ring: 'from-amber-500 to-orange-500' },
+        ].map((s) => (
+          <div key={s.label} className="text-center">
+            {/* Mini ring indicator */}
+            <div className="relative w-16 h-16 mx-auto mb-3">
+              <svg className="w-16 h-16 -rotate-90" viewBox="0 0 64 64">
+                <circle cx="32" cy="32" r="26" fill="none" stroke="#e2e8f0" strokeWidth="5" />
+                <circle
+                  cx="32" cy="32" r="26"
+                  fill="none"
+                  stroke={`url(#g-${s.label})`}
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeDasharray={`${Math.round(163 * (s.value / metrics.totalVehicles))} 163`}
+                  style={{ transition: 'stroke-dasharray 1.2s cubic-bezier(0.23,1,0.32,1)' }}
+                />
+                <defs>
+                  <linearGradient id={`g-${s.label}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" stopColor={s.ring.includes('emerald') ? '#10b981' : s.ring.includes('cyan') ? '#06b6d4' : '#f59e0b'} />
+                    <stop offset="100%" stopColor={s.ring.includes('emerald') ? '#059669' : s.ring.includes('cyan') ? '#0ea5e9' : '#d97706'} />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className={`text-lg font-display font-bold ${s.color}`}>{s.value}</span>
+              </div>
+            </div>
+            <div className="text-xs font-semibold text-slate-600 uppercase tracking-wider font-mono">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2 font-mono">
+            <span>Fleet Utilization</span>
+            <span className="text-indigo-600">{utilPct}%</span>
+          </div>
+          <div className="progress-track">
+            <div className="progress-fill" style={{ width: `${utilPct}%` }} />
+          </div>
+        </div>
+        <div>
+          <div className="flex justify-between text-xs font-semibold text-slate-600 mb-2 font-mono">
+            <span>Driver Availability</span>
+            <span className="text-emerald-600">{driverPct}%</span>
+          </div>
+          <div className="progress-track">
+            <div
+              className="progress-fill"
+              style={{ width: `${driverPct}%`, background: 'linear-gradient(90deg, #10b981 0%, #059669 100%)' }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const { user } = useContext(AuthContext);
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchMetrics = async () => {
-    try {
-      setLoading(true);
-      const data = await api.get('/api/reports/dashboard');
-      setMetrics(data.metrics);
-    } catch (err) {
-      setError('Failed to load dashboard metrics');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchMetrics();
+    (async () => {
+      try {
+        setLoading(true);
+        const data = await api.get('/api/reports/dashboard');
+        setMetrics(data.metrics);
+      } catch {
+        setError('Failed to load dashboard metrics. Please refresh.');
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, []);
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[50vh]">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="space-y-8">
+        <div className="fade-up mb-8">
+          <div className="skeleton h-4 w-32 mb-3" />
+          <div className="skeleton h-9 w-64 mb-2" />
+          <div className="skeleton h-4 w-48" />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => <SkeletonCard key={i} />)}
+        </div>
+        <div className="skeleton h-56 rounded-2xl" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-sm">
-        {error}
+      <div className="fade-up p-5 rounded-2xl bg-rose-50 border border-rose-100 flex items-center gap-4">
+        <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center flex-shrink-0">
+          <AlertCircle className="w-5 h-5 text-rose-500" />
+        </div>
+        <div>
+          <div className="font-semibold text-rose-700 text-sm">Unable to load data</div>
+          <div className="text-rose-500 text-xs mt-0.5">{error}</div>
+        </div>
       </div>
     );
   }
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
-  };
-
-  const cards = [
-    { name: 'Active Vehicles', value: metrics.activeVehicles, subtitle: `Out of ${metrics.totalVehicles} registered`, icon: Truck, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
-    { name: 'Active Dispatch Trips', value: metrics.activeTrips, subtitle: 'Currently in progress', icon: Compass, color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
-    { name: 'Fleet in Maintenance', value: metrics.inShopVehicles, subtitle: 'Vehicles currently in shop', icon: AlertCircle, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
-    { name: 'Active Drivers', value: metrics.activeDrivers, subtitle: `Out of ${metrics.totalDrivers} drivers`, icon: Users, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
-    { name: 'Estimated Expenditures', value: formatCurrency(metrics.totalCost), subtitle: 'Fuel and toll totals', icon: DollarSign, color: 'text-rose-500 bg-rose-500/10 border-rose-500/20' },
-    { name: 'Fleet Utilization', value: `${metrics.utilization}%`, subtitle: 'Active trips vs total fleet', icon: TrendingUp, color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20' }
-  ];
-
   return (
     <div className="space-y-8">
-      {/* Top Banner */}
-      <div>
-        <h2 className="text-2xl font-extrabold text-white tracking-tight">Control Dashboard</h2>
-        <p className="text-sm text-slate-400">Welcome to the TransitOps management portal. Here is today's operations summary.</p>
+      <PageHeader user={user} />
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {CARD_CONFIG.map((config) => (
+          <KpiCard
+            key={config.key}
+            config={config}
+            value={metrics[config.key]}
+            subtitle={config.getSubtitle(metrics)}
+          />
+        ))}
       </div>
 
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {cards.map((card) => {
-          const Icon = card.icon;
-          return (
-            <div key={card.name} className="glass-panel p-6 rounded-2xl border border-slate-800/80 hover-scale">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">{card.name}</span>
-                <div className={`p-2 rounded-lg border ${card.color}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-              </div>
-              <div className="text-2xl font-bold text-white mb-1">{card.value}</div>
-              <div className="text-xs text-slate-500 font-medium">{card.subtitle}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Fleet Utilization Progress Chart card */}
-      <div className="glass-panel p-8 rounded-2xl border border-slate-800/80">
-        <h3 className="text-lg font-bold text-white mb-2">Operations Status Summary</h3>
-        <p className="text-xs text-slate-500 mb-6">Visual percentage representation of active assets vs available reserve capacity.</p>
-        
-        <div className="space-y-4">
-          <div>
-            <div className="flex justify-between text-xs font-semibold text-slate-400 mb-1">
-              <span>Fleet Utilization</span>
-              <span>{metrics.utilization}%</span>
-            </div>
-            <div className="w-full bg-slate-800 rounded-full h-3 overflow-hidden">
-              <div 
-                className="bg-blue-500 h-full rounded-full transition-all duration-500" 
-                style={{ width: `${metrics.utilization}%` }}
-              ></div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-4 pt-4 text-center border-t border-slate-800/50">
-            <div>
-              <div className="text-xl font-bold text-emerald-400">
-                {metrics.totalVehicles - metrics.activeVehicles - metrics.inShopVehicles}
-              </div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Available</div>
-            </div>
-            <div>
-              <div className="text-xl font-bold text-blue-400">
-                {metrics.activeVehicles}
-              </div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">On Road</div>
-            </div>
-            <div>
-              <div className="text-xl font-bold text-amber-400">
-                {metrics.inShopVehicles}
-              </div>
-              <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">In Maintenance</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Operations Overview */}
+      <OperationsPanel metrics={metrics} />
     </div>
   );
 }

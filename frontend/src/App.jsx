@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx';
+import Home from './pages/Home.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
@@ -10,80 +11,121 @@ import Maintenance from './pages/Maintenance.jsx';
 import FuelExpenses from './pages/FuelExpenses.jsx';
 import Reports from './pages/Reports.jsx';
 
+function AuroraBackground() {
+  return (
+    <div className="aurora-bg" aria-hidden="true">
+      <div className="aurora-orb-1" />
+      <div className="aurora-orb-2" />
+    </div>
+  );
+}
+
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #e8eeff 100%)' }}>
+      <AuroraBackground />
+      <div className="flex flex-col items-center gap-6 fade-in">
+        <div className="relative w-16 h-16">
+          {/* Outer ring */}
+          <div className="absolute inset-0 rounded-full border-2 border-indigo-100" />
+          {/* Spinning gradient arc */}
+          <div className="absolute inset-0 rounded-full" style={{
+            background: 'conic-gradient(from 0deg, transparent 0%, #6366f1 100%)',
+            WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)',
+            mask: 'radial-gradient(farthest-side, transparent calc(100% - 3px), #000 0)',
+            animation: 'spin-ring 0.9s linear infinite'
+          }} />
+          {/* Inner ring */}
+          <div className="absolute inset-3 rounded-full" style={{
+            background: 'conic-gradient(from 90deg, transparent 0%, #8b5cf6 100%)',
+            WebkitMask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0)',
+            mask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), #000 0)',
+            animation: 'spin-ring 1.3s linear infinite reverse'
+          }} />
+          {/* Center dot */}
+          <div className="absolute inset-[22px] rounded-full grad-primary" />
+        </div>
+        <div className="text-center">
+          <div className="font-display font-bold text-xl gradient-text mb-1">Nexora</div>
+          <div className="text-slate-500 text-sm font-medium">Initializing your workspace...</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AccessDenied() {
+  return (
+    <div className="flex flex-col items-center justify-center h-[60vh] gap-4 fade-up">
+      <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center">
+        <svg className="w-8 h-8 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+            d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"
+          />
+        </svg>
+      </div>
+      <div>
+        <div className="text-lg font-display font-bold text-slate-800 text-center mb-1">Access Restricted</div>
+        <div className="text-slate-500 text-sm text-center">Your role does not have permission to view Fuel &amp; Expenses.</div>
+      </div>
+    </div>
+  );
+}
+
 function MainApp() {
   const { user, loading } = useContext(AuthContext);
-  const [path, setPath] = useState(window.location.hash || '#dashboard');
+  const [path, setPath] = useState(window.location.hash || '#home');
 
   useEffect(() => {
-    const handleHashChange = () => {
-      setPath(window.location.hash || '#dashboard');
-    };
+    const handleHashChange = () => setPath(window.location.hash || '#home');
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400">
-        <div className="flex flex-col items-center gap-3">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          <div>Loading TransitOps...</div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <LoadingScreen />;
 
-  // Redirect to login if not authenticated
+  // Unauthenticated routing
   if (!user) {
-    // If the hash is anything other than login, force it to login
-    if (path !== '#login') {
-      window.location.hash = '#login';
+    if (path === '#login') {
+      return <Login />;
     }
-    return <Login />;
+    // Default unauthenticated view is Home
+    if (path !== '#home') {
+      window.location.hash = '#home';
+      return null;
+    }
+    return <Home />;
   }
 
-  // If authenticated and tries to hit #login, redirect to dashboard
-  if (path === '#login') {
+  // Authenticated routing redirections
+  if (path === '#login' || path === '#home') {
     window.location.hash = '#dashboard';
     return null;
   }
 
-  // Router matching
   const renderPage = () => {
     switch (path) {
-      case '#dashboard':
-        return <Dashboard />;
-      case '#vehicles':
-        return <Vehicles />;
-      case '#drivers':
-        return <Drivers />;
-      case '#trips':
-        return <Trips />;
-      case '#maintenance':
-        return <Maintenance />;
+      case '#dashboard':    return <Dashboard />;
+      case '#vehicles':     return <Vehicles />;
+      case '#drivers':      return <Drivers />;
+      case '#trips':        return <Trips />;
+      case '#maintenance':  return <Maintenance />;
       case '#fuel-expenses':
-        // Safety officer shouldn't access fuel-expenses
-        if (user.role === 'SafetyOfficer') {
-          return (
-            <div className="flex flex-col items-center justify-center h-[60vh]">
-              <div className="text-rose-400 text-lg font-semibold">Access Denied</div>
-              <div className="text-slate-500 text-sm">Your role does not have permission to view Fuel & Expenses.</div>
-            </div>
-          );
-        }
+        if (user.role === 'SafetyOfficer') return <AccessDenied />;
         return <FuelExpenses />;
-      case '#reports':
-        return <Reports />;
-      default:
-        return <Dashboard />;
+      case '#reports':      return <Reports />;
+      default:              return <Dashboard />;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-950 text-slate-100">
+    <div className="flex min-h-screen" style={{ background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 40%, #eef2ff 100%)' }}>
+      <AuroraBackground />
       <Sidebar currentPath={path} />
-      <main className="flex-1 p-8 max-w-7xl mx-auto w-full">
-        {renderPage()}
+      <main className="flex-1 min-w-0 p-6 lg:p-8 overflow-auto">
+        <div className="max-w-7xl mx-auto w-full">
+          {renderPage()}
+        </div>
       </main>
     </div>
   );

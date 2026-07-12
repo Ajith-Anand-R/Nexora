@@ -1,21 +1,104 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { api } from '../utils/api.js';
 import { AuthContext } from '../context/AuthContext.jsx';
-import { Plus, Play, CheckCircle2 } from 'lucide-react';
+import { Plus, Play, CheckCircle2, Navigation, MapPin } from 'lucide-react';
+
+const STATUS_CFG = {
+  Pending:    { cls: 'badge-slate',   dot: 'bg-slate-400',    icon: '⏳' },
+  Dispatched: { cls: 'badge-indigo',  dot: 'bg-indigo-500',   icon: '📡' },
+  'En Route': { cls: 'badge-cyan',    dot: 'bg-cyan-500',     icon: '🚛' },
+  Completed:  { cls: 'badge-emerald', dot: 'bg-emerald-500',  icon: '✅' },
+  Cancelled:  { cls: 'badge-rose',    dot: 'bg-rose-500',     icon: '❌' },
+};
+
+function TripCard({ trip, canDispatch, onDispatch, onStart, onCancel, onComplete, index }) {
+  const s = STATUS_CFG[trip.status] || STATUS_CFG.Pending;
+  return (
+    <div
+      className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+      style={{ animation: `fade-up 0.6s ${index * 35}ms cubic-bezier(0.23,1,0.32,1) both` }}
+    >
+      {/* Route header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex-1 min-w-0 pr-3">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-base">{s.icon}</span>
+            <span className="font-display font-bold text-slate-900 text-sm truncate">
+              {trip.source || '—'} → {trip.destination || '—'}
+            </span>
+          </div>
+          <div className="font-mono text-xs text-slate-500">#{trip.id}</div>
+        </div>
+        <span className={`badge ${s.cls} flex items-center gap-1 flex-shrink-0`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+          {trip.status}
+        </span>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        {[
+          { label: 'Vehicle',   value: trip.vehicle?.registrationNumber || `#${trip.vehicleId}` },
+          { label: 'Driver',    value: trip.driver?.name || `#${trip.driverId}` },
+          { label: 'Cargo',     value: trip.cargoWeight ? `${trip.cargoWeight} kg` : '—' },
+          { label: 'Distance',  value: trip.plannedDistance ? `${trip.plannedDistance} km` : '—' },
+          { label: 'Start Odo', value: trip.startOdometer ? `${trip.startOdometer.toLocaleString()} km` : '—' },
+          { label: 'End Odo',   value: trip.endOdometer ? `${trip.endOdometer.toLocaleString()} km` : '—' },
+        ].map((s) => (
+          <div key={s.label} className="bg-slate-50/80 rounded-xl px-3 py-2">
+            <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono mb-0.5">{s.label}</div>
+            <div className="text-sm font-semibold text-slate-700 truncate">{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Date */}
+      {trip.createdAt && (
+        <div className="text-xs text-slate-400 mb-3 font-mono">
+          Created {new Date(trip.createdAt).toLocaleDateString()}
+        </div>
+      )}
+
+      {/* Action buttons */}
+      {canDispatch && (
+        <div className="flex gap-2 pt-3" style={{ borderTop: '1px solid rgba(226,232,240,0.8)' }}>
+          {trip.status === 'Pending' && (
+            <>
+              <button onClick={() => onDispatch(trip.id)} className="btn-primary text-xs py-2 flex-1 cursor-pointer">
+                <Navigation className="h-3.5 w-3.5" /> Dispatch
+              </button>
+              <button onClick={() => onCancel(trip.id)} className="btn-danger text-xs py-2 flex-1 cursor-pointer">Cancel</button>
+            </>
+          )}
+          {trip.status === 'Dispatched' && (
+            <button onClick={() => onStart(trip.id)} className="btn-primary text-xs py-2 flex-1 cursor-pointer">
+              <Play className="h-3.5 w-3.5" /> Start Trip
+            </button>
+          )}
+          {trip.status === 'En Route' && (
+            <button onClick={() => onComplete(trip)} className="btn-primary text-xs py-2 flex-1 cursor-pointer"
+              style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+              <CheckCircle2 className="h-3.5 w-3.5" /> Complete
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Trips() {
   const { user } = useContext(AuthContext);
-  const isDispatcher = user?.role === 'Driver'; // Driver role acts as Dispatcher
+  const canDispatch = ['FleetManager', 'Driver', 'Dispatcher'].includes(user?.role);
 
   const [trips, setTrips] = useState([]);
   const [availableVehicles, setAvailableVehicles] = useState([]);
   const [availableDrivers, setAvailableDrivers] = useState([]);
-  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Dispatch Modal State
+  // Dispatch modal
   const [showDispatchModal, setShowDispatchModal] = useState(false);
   const [selectedVehicleId, setSelectedVehicleId] = useState('');
   const [selectedDriverId, setSelectedDriverId] = useState('');
@@ -26,17 +109,19 @@ export default function Trips() {
   const [plannedDistance, setPlannedDistance] = useState('');
   const [dispatchError, setDispatchError] = useState('');
 
-  // Completion Modal State
+  // Complete modal
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [completingTrip, setCompletingTrip] = useState(null);
   const [finalOdometer, setFinalOdometer] = useState('');
   const [completeError, setCompleteError] = useState('');
 
+  const [statusFilter, setStatusFilter] = useState('');
+
   const fetchTrips = async () => {
     try {
-      setLoading(true);
-      setError('');
-      const data = await api.get('/api/trips');
+      setLoading(true); setError('');
+      const params = statusFilter ? `?status=${statusFilter}` : '';
+      const data = await api.get(`/api/trips${params}`);
       setTrips(data);
     } catch (err) {
       setError(err.message || 'Failed to fetch trips');
@@ -47,481 +132,245 @@ export default function Trips() {
 
   const fetchResources = async () => {
     try {
-      // Fetch vehicles and drivers to find those available
-      const vehiclesData = await api.get('/api/vehicles?status=Available');
-      const driversData = await api.get('/api/drivers?status=Available');
-      setAvailableVehicles(vehiclesData);
-      setAvailableDrivers(driversData);
+      const [vd, dd] = await Promise.all([
+        api.get('/api/vehicles?status=Available'),
+        api.get('/api/drivers?status=Available'),
+      ]);
+      setAvailableVehicles(vd);
+      setAvailableDrivers(dd);
     } catch (err) {
       console.error('Failed to load dispatch resources', err);
     }
   };
 
-  useEffect(() => {
-    fetchTrips();
-  }, []);
+  useEffect(() => { fetchTrips(); }, [statusFilter]);
 
   const openDispatchModal = () => {
     fetchResources();
-    setSelectedVehicleId('');
-    setSelectedDriverId('');
-    setRouteStart('');
-    setRouteEnd('');
-    setStartOdometer('');
-    setCargoWeight('');
-    setPlannedDistance('');
-    setDispatchError('');
-    setShowDispatchModal(true);
+    setSelectedVehicleId(''); setSelectedDriverId(''); setRouteStart('');
+    setRouteEnd(''); setStartOdometer(''); setCargoWeight('');
+    setPlannedDistance(''); setDispatchError(''); setShowDispatchModal(true);
   };
 
   const handleVehicleChange = (vehicleId) => {
     setSelectedVehicleId(vehicleId);
-    const vehicle = availableVehicles.find(v => v.id === Number(vehicleId));
-    if (vehicle) {
-      setStartOdometer(vehicle.odometer.toString());
-    } else {
-      setStartOdometer('');
-    }
+    const v = availableVehicles.find(v => v.id === Number(vehicleId));
+    setStartOdometer(v ? v.odometer.toString() : '');
   };
 
   const handleDispatchSubmit = async (e) => {
-    e.preventDefault();
-    setDispatchError('');
-
-    if (!selectedVehicleId || !selectedDriverId) {
-      setDispatchError('Please select a vehicle and a driver');
-      return;
-    }
-
+    e.preventDefault(); setDispatchError('');
+    if (!selectedVehicleId || !selectedDriverId) { setDispatchError('Select a vehicle and driver.'); return; }
     try {
       await api.post('/api/trips', {
-        vehicleId: Number(selectedVehicleId),
-        driverId: Number(selectedDriverId),
-        source: routeStart.trim(),
-        destination: routeEnd.trim(),
-        cargoWeight: Number(cargoWeight),
-        plannedDistance: Number(plannedDistance),
+        vehicleId: Number(selectedVehicleId), driverId: Number(selectedDriverId),
+        source: routeStart.trim(), destination: routeEnd.trim(),
+        cargoWeight: Number(cargoWeight), plannedDistance: Number(plannedDistance),
         startOdometer: Number(startOdometer)
       });
-
-      setSuccess('Trip draft created successfully');
-      setShowDispatchModal(false);
-      fetchTrips();
+      setSuccess('Trip draft created!');
+      setShowDispatchModal(false); fetchTrips();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
-      setDispatchError(err.message || 'Failed to create trip draft');
+      setDispatchError(err.message || 'Failed to create trip');
     }
   };
 
   const handleDispatchTrip = async (id) => {
-    try {
-      await api.put(`/api/trips/${id}/dispatch`);
-      setSuccess('Trip dispatched successfully');
-      fetchTrips();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.message || 'Failed to dispatch trip');
-    }
+    try { await api.put(`/api/trips/${id}/dispatch`); setSuccess('Trip dispatched!'); fetchTrips(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.message); }
   };
-
   const handleStartTrip = async (id) => {
-    try {
-      await api.put(`/api/trips/${id}/start`);
-      setSuccess('Trip status updated to En Route');
-      fetchTrips();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.message || 'Failed to start trip');
-    }
+    try { await api.put(`/api/trips/${id}/start`); setSuccess('Trip En Route!'); fetchTrips(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.message); }
   };
-
   const handleCancelTrip = async (id) => {
-    try {
-      await api.put(`/api/trips/${id}/cancel`);
-      setSuccess('Trip cancelled successfully');
-      fetchTrips();
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError(err.message || 'Failed to cancel trip');
-    }
+    if (!window.confirm('Cancel this trip?')) return;
+    try { await api.put(`/api/trips/${id}/cancel`); setSuccess('Trip cancelled.'); fetchTrips(); setTimeout(() => setSuccess(''), 3000); }
+    catch (err) { setError(err.message); }
   };
 
   const openCompleteModal = (trip) => {
-    setCompletingTrip(trip);
-    setFinalOdometer('');
-    setCompleteError('');
-    setShowCompleteModal(true);
+    setCompletingTrip(trip); setFinalOdometer(''); setCompleteError(''); setShowCompleteModal(true);
   };
 
   const handleCompleteSubmit = async (e) => {
-    e.preventDefault();
-    setCompleteError('');
-
-    const finalOdoNum = Number(finalOdometer);
-    if (finalOdoNum < completingTrip.startOdometer) {
-      setCompleteError(`Final odometer cannot be less than starting odometer (${completingTrip.startOdometer} km)`);
-      return;
+    e.preventDefault(); setCompleteError('');
+    const finalOdo = Number(finalOdometer);
+    if (finalOdo < completingTrip.startOdometer) {
+      setCompleteError(`Final odometer must be ≥ ${completingTrip.startOdometer} km`); return;
     }
-
     try {
-      await api.put(`/api/trips/${completingTrip.id}/complete`, {
-        finalOdometer: finalOdoNum
-      });
-
-      setSuccess('Trip marked as Completed successfully');
-      setShowCompleteModal(false);
-      fetchTrips();
+      await api.put(`/api/trips/${completingTrip.id}/complete`, { finalOdometer: finalOdo });
+      setSuccess('Trip completed!'); setShowCompleteModal(false); fetchTrips();
       setTimeout(() => setSuccess(''), 3000);
     } catch (err) {
       setCompleteError(err.message || 'Failed to complete trip');
     }
   };
 
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Dispatched':
-        return 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
-      case 'En Route':
-        return 'bg-blue-500/10 text-blue-400 border border-blue-500/20';
-      case 'Completed':
-        return 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20';
-      default:
-        return 'bg-slate-500/10 text-slate-400 border border-slate-500/20';
-    }
-  };
+  const inp = "input-premium text-sm";
+  const sel = "select-premium text-sm";
+
+  const statusGroups = ['Pending', 'Dispatched', 'En Route', 'Completed', 'Cancelled'];
+  const filteredTrips = trips;
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="flex justify-between items-center">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 fade-up">
         <div>
-          <h2 className="text-2xl font-extrabold text-white tracking-tight">Trips Dispatch</h2>
-          <p className="text-sm text-slate-400">Dispatch and track active transport deliveries and transit status.</p>
+          <h2 className="text-3xl font-display font-bold text-slate-900">
+            Trips <span className="gradient-text">Dispatch</span>
+          </h2>
+          <p className="text-slate-500 text-sm mt-1">Dispatch, track, and complete transport deliveries.</p>
         </div>
-        {isDispatcher && (
-          <button
-            onClick={openDispatchModal}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-sm font-semibold shadow-lg shadow-blue-500/10 active:translate-y-[1px] transition-all duration-150"
-          >
-            <Plus className="h-4 w-4" />
-            Dispatch Trip
+        {canDispatch && (
+          <button onClick={openDispatchModal} className="btn-primary cursor-pointer">
+            <Plus className="h-4 w-4" /> New Trip
           </button>
         )}
       </div>
 
-      {success && (
-        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-          {success}
-        </div>
-      )}
+      {success && <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-700 text-sm font-semibold fade-in">{success}</div>}
+      {error && <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-sm fade-in">{error}</div>}
 
-      {error && (
-        <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold">
-          {error}
-        </div>
-      )}
-
-      {/* Trips List */}
-      <div className="glass-panel rounded-2xl border border-slate-800/80 overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : trips.length === 0 ? (
-          <div className="py-12 text-center text-slate-500 text-sm">No trips dispatched yet.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse text-left">
-              <thead>
-                <tr className="border-b border-slate-800/80 bg-slate-950/40 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="p-4">ID</th>
-                  <th className="p-4">Vehicle</th>
-                  <th className="p-4">Driver</th>
-                  <th className="p-4">Route</th>
-                  <th className="p-4">Cargo Weight</th>
-                  <th className="p-4">Distance (P / A)</th>
-                  <th className="p-4">Odometer (S / F)</th>
-                  <th className="p-4">Status</th>
-                  {isDispatcher && <th className="p-4 text-right">Actions</th>}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/40 text-sm text-slate-300">
-                {trips.map((t) => (
-                  <tr key={t.id} className="hover:bg-slate-900/30 transition-colors">
-                    <td className="p-4 font-semibold text-white">{t.id}</td>
-                    <td className="p-4">
-                      <div className="font-semibold text-white">{t.vehicleReg}</div>
-                      <div className="text-xs text-slate-500">{t.vehicleModel}</div>
-                    </td>
-                    <td className="p-4">{t.driverName}</td>
-                    <td className="p-4">
-                      <div className="flex items-center gap-1.5 font-medium">
-                        <span className="text-slate-200">{t.source}</span>
-                        <span className="text-slate-500">→</span>
-                        <span className="text-slate-200">{t.destination}</span>
-                      </div>
-                    </td>
-                    <td className="p-4">{t.cargoWeight} kg</td>
-                    <td className="p-4">
-                      <span className="text-slate-300">{t.plannedDistance} km</span>
-                      <span className="text-slate-500 mx-1">/</span>
-                      <span className="text-slate-400">{t.actualDistance ? `${t.actualDistance} km` : '—'}</span>
-                    </td>
-                    <td className="p-4">
-                      <div className="text-xs text-slate-300">Start: {t.startOdometer} km</div>
-                      {t.finalOdometer && <div className="text-xs text-slate-500">Final: {t.finalOdometer} km</div>}
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusBadge(t.status)}`}>
-                        {t.status}
-                      </span>
-                    </td>
-                    {isDispatcher && (
-                      <td className="p-4 text-right space-x-2">
-                        {t.status === 'Draft' && (
-                          <button
-                            onClick={() => handleDispatchTrip(t.id)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 hover:text-indigo-300 border border-indigo-500/20 text-xs font-semibold transition-all"
-                          >
-                            Dispatch
-                          </button>
-                        )}
-                        {t.status === 'Dispatched' && (
-                          <>
-                            <button
-                              onClick={() => handleStartTrip(t.id)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 hover:text-blue-300 border border-blue-500/20 text-xs font-semibold transition-all"
-                            >
-                              <Play className="h-3 w-3" />
-                              Start
-                            </button>
-                            <button
-                              onClick={() => handleCancelTrip(t.id)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600/10 hover:bg-rose-600/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 text-xs font-semibold transition-all"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        )}
-                        {t.status === 'En Route' && (
-                          <button
-                            onClick={() => openCompleteModal(t)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 text-xs font-semibold transition-all"
-                          >
-                            <CheckCircle2 className="h-3 w-3" />
-                            Complete
-                          </button>
-                        )}
-                        {(t.status === 'Completed' || t.status === 'Cancelled') && (
-                          <span className="text-xs text-slate-500 font-medium">{t.status}</span>
-                        )}
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+      {/* Status filter pills */}
+      <div className="flex flex-wrap gap-2 fade-up-1">
+        {['', ...statusGroups].map((s) => (
+          <button
+            key={s || 'all'}
+            onClick={() => setStatusFilter(s)}
+            className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all cursor-pointer border ${
+              statusFilter === s
+                ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20'
+                : 'bg-white/80 text-slate-600 border-slate-200 hover:border-indigo-300'
+            }`}
+          >
+            {s || 'All Trips'}
+          </button>
+        ))}
       </div>
+
+      {/* Trip grid */}
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="glass rounded-2xl p-5 border border-slate-100">
+              <div className="skeleton h-4 w-48 mb-2" />
+              <div className="skeleton h-3 w-16 mb-4" />
+              <div className="grid grid-cols-2 gap-2 mb-3">{[...Array(4)].map((_, j) => <div key={j} className="skeleton h-10 rounded-xl" />)}</div>
+            </div>
+          ))}
+        </div>
+      ) : filteredTrips.length === 0 ? (
+        <div className="glass rounded-2xl p-12 border border-slate-100 text-center fade-up">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
+            <Navigation className="w-8 h-8 text-slate-300" />
+          </div>
+          <div className="text-slate-600 font-semibold mb-1">No trips found</div>
+          <div className="text-slate-400 text-sm">Try a different filter or create a new trip.</div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredTrips.map((trip, i) => (
+            <TripCard
+              key={trip.id} trip={trip} canDispatch={canDispatch} index={i}
+              onDispatch={handleDispatchTrip} onStart={handleStartTrip}
+              onCancel={handleCancelTrip} onComplete={openCompleteModal}
+            />
+          ))}
+        </div>
+      )}
 
       {/* Dispatch Modal */}
       {showDispatchModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 overflow-hidden">
-            <h3 className="text-lg font-bold text-white mb-4">Dispatch New Cargo Trip</h3>
-
-            {dispatchError && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
-                {dispatchError}
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowDispatchModal(false)}>
+          <div className="modal-box max-w-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-display font-bold text-slate-900">Create New Trip</h3>
+                <p className="text-slate-500 text-sm mt-0.5">Assign vehicle, driver and route details.</p>
               </div>
-            )}
-
+              <button onClick={() => setShowDispatchModal(false)} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 cursor-pointer">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            {dispatchError && <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-medium">{dispatchError}</div>}
             <form onSubmit={handleDispatchSubmit} className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Select Vehicle (Available Only)
-                </label>
-                <select
-                  required
-                  value={selectedVehicleId}
-                  onChange={(e) => handleVehicleChange(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                >
-                  <option value="">-- Choose Vehicle --</option>
-                  {availableVehicles.map(v => (
-                    <option key={v.id} value={v.id}>
-                      {v.registrationNumber} - {v.nameModel} ({v.type}) [Odo: {v.odometer} km]
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Select Driver (Available Only)
-                </label>
-                <select
-                  required
-                  value={selectedDriverId}
-                  onChange={(e) => setSelectedDriverId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                >
-                  <option value="">-- Choose Driver --</option>
-                  {availableDrivers.map(d => (
-                    <option key={d.id} value={d.id}>
-                      {d.name} [Safety: {d.safetyScore}/100]
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Start Location
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={routeStart}
-                    onChange={(e) => setRouteStart(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. Seattle Depot"
-                  />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Vehicle</label>
+                  <select value={selectedVehicleId} onChange={(e) => handleVehicleChange(e.target.value)} className={sel} required>
+                    <option value="">Select vehicle...</option>
+                    {availableVehicles.map(v => <option key={v.id} value={v.id}>{v.registrationNumber} – {v.nameModel}</option>)}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Destination
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={routeEnd}
-                    onChange={(e) => setRouteEnd(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. Portland Hub"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Cargo Weight (kg)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={cargoWeight}
-                    onChange={(e) => setCargoWeight(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. 5000"
-                  />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Driver</label>
+                  <select value={selectedDriverId} onChange={(e) => setSelectedDriverId(e.target.value)} className={sel} required>
+                    <option value="">Select driver...</option>
+                    {availableDrivers.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                    Planned Distance (km)
-                  </label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    value={plannedDistance}
-                    onChange={(e) => setPlannedDistance(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="e.g. 350"
-                  />
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Origin</label>
+                  <input type="text" required value={routeStart} onChange={(e) => setRouteStart(e.target.value)} className={inp} placeholder="Departure city" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Destination</label>
+                  <input type="text" required value={routeEnd} onChange={(e) => setRouteEnd(e.target.value)} className={inp} placeholder="Arrival city" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Start Odometer (km)</label>
+                  <input type="number" required value={startOdometer} onChange={(e) => setStartOdometer(e.target.value)} className={inp} placeholder="Auto-filled from vehicle" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Planned Distance (km)</label>
+                  <input type="number" required value={plannedDistance} onChange={(e) => setPlannedDistance(e.target.value)} className={inp} placeholder="e.g. 450" />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Cargo Weight (kg)</label>
+                  <input type="number" required value={cargoWeight} onChange={(e) => setCargoWeight(e.target.value)} className={inp} placeholder="e.g. 800" />
                 </div>
               </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Starting Odometer Reading (km)
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={startOdometer}
-                  onChange={(e) => setStartOdometer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="Will autofill from vehicle selection"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
-                <button
-                  type="button"
-                  onClick={() => setShowDispatchModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:bg-slate-800 text-sm font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold"
-                >
-                  Confirm Dispatch
-                </button>
+              <div className="flex gap-3 pt-4" style={{ borderTop: '1px solid rgba(226,232,240,0.8)' }}>
+                <button type="button" onClick={() => setShowDispatchModal(false)} className="btn-ghost flex-1 cursor-pointer">Cancel</button>
+                <button type="submit" className="btn-primary flex-1 cursor-pointer">Create Trip Draft</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Complete Trip Modal */}
-      {showCompleteModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 overflow-hidden">
-            <h3 className="text-lg font-bold text-white mb-2">Complete Trip #{completingTrip?.id}</h3>
-            <p className="text-xs text-slate-500 mb-4">
-              Enter final odometer details to release vehicle <strong>{completingTrip?.vehicleReg}</strong> and driver <strong>{completingTrip?.driverName}</strong>.
-            </p>
-
-            {completeError && (
-              <div className="mb-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs">
-                {completeError}
+      {/* Complete Modal */}
+      {showCompleteModal && completingTrip && (
+        <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && setShowCompleteModal(false)}>
+          <div className="modal-box max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-display font-bold text-slate-900">Complete Trip</h3>
+                <p className="text-slate-500 text-sm mt-0.5">
+                  {completingTrip.source} → {completingTrip.destination}
+                </p>
               </div>
-            )}
-
+              <button onClick={() => setShowCompleteModal(false)} className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 cursor-pointer">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="mb-4 p-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs">
+              Start odometer: <strong>{completingTrip.startOdometer?.toLocaleString()} km</strong>
+            </div>
+            {completeError && <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-xs font-medium">{completeError}</div>}
             <form onSubmit={handleCompleteSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                  Starting Odometer (km)
-                </label>
-                <div className="px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-400 text-sm">
-                  {completingTrip?.startOdometer} km
-                </div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">Final Odometer Reading (km)</label>
+                <input type="number" required value={finalOdometer} onChange={(e) => setFinalOdometer(e.target.value)} className={inp} placeholder={`≥ ${completingTrip.startOdometer}`} />
               </div>
-
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">
-                  Final Odometer Reading (km)
-                </label>
-                <input
-                  type="number"
-                  required
-                  value={finalOdometer}
-                  onChange={(e) => setFinalOdometer(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-slate-950 border border-slate-800 text-slate-200 text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="e.g. Must be greater than start"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
-                <button
-                  type="button"
-                  onClick={() => setShowCompleteModal(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:bg-slate-800 text-sm font-semibold"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold"
-                >
-                  Complete Trip & Release Assets
+              <div className="flex gap-3 pt-4" style={{ borderTop: '1px solid rgba(226,232,240,0.8)' }}>
+                <button type="button" onClick={() => setShowCompleteModal(false)} className="btn-ghost flex-1 cursor-pointer">Cancel</button>
+                <button type="submit" className="btn-primary flex-1 cursor-pointer" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                  <CheckCircle2 className="h-4 w-4" /> Mark Complete
                 </button>
               </div>
             </form>
