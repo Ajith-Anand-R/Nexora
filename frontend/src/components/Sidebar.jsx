@@ -46,9 +46,9 @@ function NavItem({ link, isActive }) {
   return (
     <a
       href={link.hash}
-      className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+      className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer click-tactile ${
         isActive
-          ? 'nav-active text-indigo-700'
+          ? 'nav-active text-indigo-700 font-bold'
           : 'text-slate-500 hover:text-slate-700 hover:bg-white/60'
       }`}
       style={{ textDecoration: 'none' }}
@@ -135,9 +135,8 @@ export default function Sidebar({ currentPath }) {
             </svg>
           </div>
           <div>
-            <h1 className="font-display font-bold text-base leading-tight">
-              <span className="gradient-text">Transit</span>
-              <span className="text-slate-800">Ops</span>
+            <h1 className="font-display font-black text-lg tracking-tight text-slate-800 leading-tight">
+              Nexora
             </h1>
             <div className="text-[9px] text-slate-400 uppercase tracking-widest font-semibold font-mono">
               Logistics Portal
@@ -189,7 +188,7 @@ export default function Sidebar({ currentPath }) {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200 cursor-pointer disabled:opacity-50"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition-all duration-200 cursor-pointer disabled:opacity-50 click-tactile"
         >
           <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
             <LogOut className="h-4 w-4" />

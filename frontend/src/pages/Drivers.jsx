@@ -38,7 +38,7 @@ function DriverCard({ driver, canEdit, index, onEdit }) {
 
   return (
     <div
-      className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+      className="glass-premium rounded-2xl p-5 card-3d click-tactile hover-spring"
       style={{ animation: `fade-up 0.6s ${index * 40}ms cubic-bezier(0.23,1,0.32,1) both` }}
     >
       {/* Header */}
@@ -225,7 +225,7 @@ export default function Drivers() {
       {error && <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-sm fade-in">{error}</div>}
 
       {/* Filters */}
-      <div className="glass rounded-2xl p-4 border border-slate-100 fade-up-1">
+      <div className="glass-premium rounded-2xl p-4 fade-up-1">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5 font-mono">Search Driver</label>
@@ -254,7 +254,7 @@ export default function Drivers() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl p-5 border border-slate-100">
+            <div key={i} className="glass-premium rounded-2xl p-5">
               <div className="flex gap-3 mb-4"><div className="skeleton w-12 h-12 rounded-xl" /><div className="flex-1"><div className="skeleton h-4 w-32 mb-2" /><div className="skeleton h-3 w-24" /></div></div>
               <div className="grid grid-cols-2 gap-2 mb-3">{[...Array(4)].map((_, j) => <div key={j} className="skeleton h-10 rounded-xl" />)}</div>
               <div className="skeleton h-2 rounded-full" />
@@ -262,7 +262,7 @@ export default function Drivers() {
           ))}
         </div>
       ) : drivers.length === 0 ? (
-        <div className="glass rounded-2xl p-12 border border-slate-100 text-center fade-up">
+        <div className="glass-premium rounded-2xl p-12 text-center fade-up">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
             <UserCheck className="w-8 h-8 text-slate-300" />
           </div>

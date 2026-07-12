@@ -16,7 +16,7 @@ function MaintenanceCard({ log, isManager, onClose, index }) {
 
   return (
     <div
-      className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+      className="glass-premium rounded-2xl p-5 card-3d click-tactile hover-spring"
       style={{ animation: `fade-up 0.6s ${index * 35}ms cubic-bezier(0.23,1,0.32,1) both` }}
     >
       {/* Header */}
@@ -186,7 +186,7 @@ export default function Maintenance() {
           { label: 'Active',        value: activeLogs.length,   icon: '🔧', color: 'from-amber-500 to-orange-500' },
           { label: 'Total Cost',    value: `$${totalCost.toLocaleString()}`, icon: '💰', color: 'from-emerald-500 to-teal-500' },
         ].map((k) => (
-          <div key={k.label} className="glass rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
+          <div key={k.label} className="glass-premium rounded-2xl p-4 flex items-center gap-4 click-tactile hover-spring">
             <div
               className={`w-10 h-10 rounded-xl bg-gradient-to-br ${k.color} flex items-center justify-center text-lg flex-shrink-0`}
               style={{ boxShadow: '0 4px 12px -4px rgba(99,102,241,0.3)' }}
@@ -222,7 +222,7 @@ export default function Maintenance() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl p-5 border border-slate-100">
+            <div key={i} className="glass-premium rounded-2xl p-5">
               <div className="flex gap-3 mb-4"><div className="skeleton w-10 h-10 rounded-xl" /><div className="flex-1"><div className="skeleton h-4 w-32 mb-2" /><div className="skeleton h-3 w-20" /></div></div>
               <div className="skeleton h-16 rounded-xl mb-2" />
               <div className="grid grid-cols-2 gap-2">{[...Array(2)].map((_, j) => <div key={j} className="skeleton h-10 rounded-xl" />)}</div>
@@ -230,7 +230,7 @@ export default function Maintenance() {
           ))}
         </div>
       ) : logs.length === 0 ? (
-        <div className="glass rounded-2xl p-12 border border-slate-100 text-center fade-up">
+        <div className="glass-premium rounded-2xl p-12 text-center fade-up">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
             <Wrench className="w-8 h-8 text-slate-300" />
           </div>

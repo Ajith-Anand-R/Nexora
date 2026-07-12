@@ -698,3 +698,145 @@ code, pre, .mono {
   animation-delay: 1.5s;
 }
 
+/* Volumetric 3D Building Primitives */
+.building-3d {
+  position: absolute;
+  transform-style: preserve-3d;
+  width: var(--size, 40px);
+  height: var(--size, 40px);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.building-face {
+  position: absolute;
+  transition: background-color 0.3s, transform 0.3s;
+}
+
+.building-top {
+  width: var(--size, 40px);
+  height: var(--size, 40px);
+  background: var(--top-color, linear-gradient(135deg, #a5b4fc, #6366f1));
+  transform: translateZ(var(--height, 80px));
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+}
+
+.building-left {
+  width: var(--size, 40px);
+  height: var(--height, 80px);
+  background: var(--left-color, #4f46e5);
+  transform: rotateX(-90deg);
+  transform-origin: bottom center;
+  bottom: 0;
+  left: 0;
+}
+
+.building-right {
+  width: var(--height, 80px);
+  height: var(--size, 40px);
+  background: var(--right-color, #312e81);
+  transform: rotateY(90deg);
+  transform-origin: center left;
+  top: 0;
+  left: 0;
+}
+
+/* Radar scanner sweep */
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.radar-scanner {
+  transform-origin: 100px 100px;
+  animation: radar-sweep 8s linear infinite;
+}
+
+/* Custom spring transitions */
+.transition-spring {
+  transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-spring:hover {
+  transform: scale(1.05);
+}
+
+.fade-up-spring {
+  animation: fade-up-spring-kf 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes fade-up-spring-kf {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tactile Click & Double-Bordered Layouts */
+.click-tactile {
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s, background-color 0.2s;
+  transform-style: preserve-3d;
+  user-select: none;
+}
+
+.click-tactile:active {
+  transform: scale(0.95) translateZ(-6px) rotateX(1deg);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.08) !important;
+}
+
+.glass-premium {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 
+    0 12px 32px -4px rgba(99, 102, 241, 0.06),
+    0 0 0 1.5px rgba(99, 102, 241, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform-style: preserve-3d;
+}
+
+.glass-premium:hover {
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(255, 255, 255, 0.75);
+  box-shadow: 
+    0 24px 48px -8px rgba(99, 102, 241, 0.12),
+    0 0 0 1.5px rgba(99, 102, 241, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+/* 3D Orbital Loader */
+@keyframes orbit-cw {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(0.95); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes orbit-ccw {
+  0% { transform: rotate(0deg) scale(0.95); }
+  50% { transform: rotate(-180deg) scale(1); }
+  100% { transform: rotate(-360deg) scale(0.95); }
+}
+
+@keyframes pulse-node {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.35)); }
+  50% { transform: scale(1.15); filter: drop-shadow(0 0 24px rgba(99, 102, 241, 0.6)); }
+}
+
+.orbit-ring-1 {
+  animation: orbit-cw 3s linear infinite;
+}
+
+.orbit-ring-2 {
+  animation: orbit-ccw 4.5s linear infinite;
+}
+
+.pulse-core {
+  animation: pulse-node 2s ease-in-out infinite;
+}
+

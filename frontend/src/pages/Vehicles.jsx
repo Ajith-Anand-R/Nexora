@@ -30,7 +30,7 @@ function VehicleCard({ vehicle, isManager, onEdit, onRetire }) {
   const icon = TYPE_ICON[vehicle.type] || '🚗';
 
   return (
-    <div className="glass rounded-2xl p-5 border border-slate-100 card-3d fade-up group">
+    <div className="glass-premium rounded-2xl p-5 card-3d fade-up group hover-spring click-tactile">
       {/* Top row */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
@@ -215,7 +215,7 @@ export default function Vehicles() {
       )}
 
       {/* Filter Bar */}
-      <div className="glass rounded-2xl p-4 border border-slate-100 fade-up-1">
+      <div className="glass-premium rounded-2xl p-4 fade-up-1">
         <div className="flex items-center gap-2 mb-3">
           <Filter className="h-4 w-4 text-slate-400" />
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider font-mono">Filters</span>
@@ -257,7 +257,7 @@ export default function Vehicles() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl p-5 border border-slate-100">
+            <div key={i} className="glass-premium rounded-2xl p-5">
               <div className="flex gap-3 mb-4">
                 <div className="skeleton w-11 h-11 rounded-xl flex-shrink-0" />
                 <div className="flex-1">
@@ -272,7 +272,7 @@ export default function Vehicles() {
           ))}
         </div>
       ) : vehicles.length === 0 ? (
-        <div className="glass rounded-2xl p-12 border border-slate-100 text-center fade-up">
+        <div className="glass-premium rounded-2xl p-12 text-center fade-up">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
             <Truck className="w-8 h-8 text-slate-300" />
           </div>

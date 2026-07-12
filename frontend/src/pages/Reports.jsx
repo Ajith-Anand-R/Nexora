@@ -123,7 +123,7 @@ export default function Reports() {
         {kpis.map((k, i) => (
           <div
             key={k.label}
-            className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+            className="glass-premium rounded-2xl p-5 card-3d click-tactile"
             style={{ animation: `fade-up 0.6s ${i * 60}ms cubic-bezier(0.23,1,0.32,1) both` }}
           >
             <div
@@ -142,7 +142,7 @@ export default function Reports() {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ROI Table */}
-        <div className="glass rounded-2xl border border-slate-100 overflow-hidden lg:col-span-2 fade-up">
+        <div className="glass-premium rounded-2xl overflow-hidden lg:col-span-2 fade-up">
           <div className="px-6 py-4 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(226,232,240,0.8)' }}>
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
               <BarChart2 className="h-4 w-4 text-white" />
@@ -203,7 +203,7 @@ export default function Reports() {
         {/* Right Panel */}
         <div className="space-y-5 fade-up">
           {/* Trips by Region */}
-          <div className="glass rounded-2xl border border-slate-100 p-5">
+          <div className="glass-premium rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
                 <ShieldCheck className="h-3.5 w-3.5 text-white" />
@@ -230,7 +230,7 @@ export default function Reports() {
           </div>
 
           {/* Asset Availability */}
-          <div className="glass rounded-2xl border border-slate-100 p-5">
+          <div className="glass-premium rounded-2xl p-5">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center">
                 <BarChart2 className="h-3.5 w-3.5 text-white" />

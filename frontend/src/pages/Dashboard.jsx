@@ -34,7 +34,7 @@ function PageHeader({ user }) {
 
 function SkeletonCard() {
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="glass-premium rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="skeleton h-3 w-28" />
         <div className="skeleton w-10 h-10 rounded-xl" />
@@ -128,7 +128,7 @@ function KpiCard({ config, value, subtitle }) {
 
   return (
     <div
-      className={`glass rounded-2xl p-6 card-3d border ${borderColor} cursor-pointer`}
+      className={`glass-premium rounded-2xl p-6 card-3d border ${borderColor} cursor-pointer click-tactile`}
       style={{ animationDelay: delay, animation: `fade-up 0.6s ${delay} cubic-bezier(0.23,1,0.32,1) both` }}
     >
       <div className="flex items-start justify-between mb-4">
@@ -157,7 +157,7 @@ function OperationsPanel({ metrics }) {
   const driverPct = metrics.totalDrivers > 0 ? Math.round((metrics.activeDrivers / metrics.totalDrivers) * 100) : 0;
 
   return (
-    <div className="glass rounded-2xl p-6 fade-up-5 border border-slate-100">
+    <div className="glass-premium rounded-2xl p-6 fade-up-5">
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-display font-bold text-slate-900">Operations Overview</h3>
         <span className="badge badge-primary">Live</span>

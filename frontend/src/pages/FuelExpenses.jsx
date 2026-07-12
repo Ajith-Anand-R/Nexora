@@ -5,7 +5,7 @@ import { Plus, Fuel, Receipt } from 'lucide-react';
 
 function StatCard({ icon, label, value, color }) {
   return (
-    <div className="glass rounded-2xl p-4 border border-slate-100 flex items-center gap-4">
+    <div className="glass-premium rounded-2xl p-4 flex items-center gap-4 click-tactile hover-spring">
       <div
         className={`w-10 h-10 rounded-xl bg-gradient-to-br ${color} flex items-center justify-center text-lg flex-shrink-0`}
         style={{ boxShadow: '0 4px 12px -4px rgba(99,102,241,0.3)' }}
@@ -207,7 +207,7 @@ export default function FuelExpenses() {
       </div>
 
       {/* Table */}
-      <div className="glass rounded-2xl border border-slate-100 overflow-hidden fade-up">
+      <div className="glass-premium rounded-2xl overflow-hidden fade-up">
         {loading ? (
           <div className="p-12 flex items-center justify-center">
             <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />

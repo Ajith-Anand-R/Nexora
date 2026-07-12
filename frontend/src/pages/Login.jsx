@@ -132,21 +132,23 @@ export default function Login() {
 
         {/* Content */}
         <div className="relative z-10 text-center">
-          {/* 3D Floating Logo Icon */}
-          <div className="inline-flex mb-8 float-card">
-            <div
-              className="w-20 h-20 rounded-3xl flex items-center justify-center"
-              style={{
-                background: 'rgba(255,255,255,0.18)',
-                backdropFilter: 'blur(16px)',
-                border: '1.5px solid rgba(255,255,255,0.3)',
-                boxShadow: '0 20px 40px -8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.4)',
-              }}
-            >
-              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                  d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-              </svg>
+          {/* Glassmorphic Volumetric 3D Cube */}
+          <div className="perspective-container flex justify-center items-center h-40 mb-6">
+            <div className="building-3d scale-[1.3] relative" style={{
+              '--size': '45px',
+              '--height': '80px',
+              '--top-color': 'linear-gradient(135deg, #ffffff, #c7d2fe)',
+              '--left-color': 'rgba(255,255,255,0.25)',
+              '--right-color': 'rgba(255,255,255,0.12)',
+              transform: 'rotateX(54.7deg) rotateZ(-45deg) translateZ(0px)',
+              transformStyle: 'preserve-3d',
+              animation: 'card-float 6s ease-in-out infinite'
+            }}>
+              <div className="building-face building-left" style={{ border: '1.5px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.15)' }} />
+              <div className="building-face building-right" style={{ border: '1.5px solid rgba(255,255,255,0.3)', backdropFilter: 'blur(8px)', background: 'rgba(255,255,255,0.08)' }} />
+              <div className="building-face building-top flex items-center justify-center text-[10px] font-bold text-indigo-700 font-mono" style={{ border: '1.5px solid rgba(255,255,255,0.6)', background: 'rgba(255,255,255,0.85)' }}>
+                NX
+              </div>
             </div>
           </div>
 
@@ -197,16 +199,16 @@ export default function Login() {
           <span className="font-display font-black text-xl gradient-text">Nexora</span>
         </div>
 
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md p-8 rounded-3xl glass-premium fade-up">
           {/* Form Header */}
-          <div className="mb-8 fade-up flex justify-between items-start">
+          <div className="mb-6 flex justify-between items-start">
             <div>
-              <h2 className="text-3xl font-display font-bold text-slate-900 mb-2">Welcome back</h2>
-              <p className="text-slate-500 text-sm">Sign in to your logistics dashboard</p>
+              <h2 className="text-2xl font-display font-black text-slate-900 tracking-tight">Welcome back</h2>
+              <p className="text-slate-500 text-xs">Sign in to your logistics dashboard</p>
             </div>
             <button
               onClick={() => window.location.hash = '#home'}
-              className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100/30 px-3 py-1.5 rounded-xl"
+              className="text-[10px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors flex items-center gap-1 cursor-pointer bg-indigo-50/50 hover:bg-indigo-50 border border-indigo-100/35 px-2.5 py-1.5 rounded-xl click-tactile"
             >
               ← Back to Home
             </button>
@@ -214,18 +216,18 @@ export default function Login() {
 
           {/* Error */}
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-3 fade-in">
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-100 flex items-center gap-3 fade-in">
               <svg className="w-4 h-4 text-rose-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
-              <span className="text-rose-700 text-sm font-medium">{error}</span>
+              <span className="text-rose-700 text-xs font-medium">{error}</span>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 fade-up-1">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">
                 Email Address
               </label>
               <input
@@ -233,14 +235,14 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-premium"
-                placeholder="you@transitops.com"
+                className="input-premium py-2 text-sm"
+                placeholder="you@nexora.com"
                 autoComplete="email"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2 font-mono">
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1.5 font-mono">
                 Password
               </label>
               <div className="relative">
@@ -249,7 +251,7 @@ export default function Login() {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="input-premium pr-10"
+                  className="input-premium pr-10 py-2 text-sm"
                   placeholder="••••••••"
                   autoComplete="current-password"
                 />
@@ -275,7 +277,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="btn-primary w-full py-3 mt-2"
+              className="btn-primary w-full py-2.5 mt-2 click-tactile flex items-center justify-center gap-2 text-sm"
             >
               {loading ? (
                 <>
@@ -294,11 +296,11 @@ export default function Login() {
           </form>
 
           {/* Demo Logins */}
-          <div className="mt-8 fade-up-2">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex-1 h-px bg-slate-200" />
-              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Quick Demo</span>
-              <div className="flex-1 h-px bg-slate-200" />
+          <div className="mt-6">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px bg-slate-200/80" />
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Quick Demo</span>
+              <div className="flex-1 h-px bg-slate-200/80" />
             </div>
 
             <div className="grid grid-cols-2 gap-2">
@@ -307,24 +309,24 @@ export default function Login() {
                   key={acc.role}
                   type="button"
                   onClick={() => handleDemoSelect(acc)}
-                  className={`group text-left p-3 rounded-xl border transition-all duration-200 cursor-pointer ${acc.bg} ${acc.border} hover:shadow-premium hover:-translate-y-0.5 ${selectedDemo === acc.role ? 'ring-2 ring-indigo-300' : ''}`}
+                  className={`group text-left p-3 rounded-xl border transition-all duration-200 cursor-pointer click-tactile ${acc.bg} ${acc.border} hover:shadow-premium ${selectedDemo === acc.role ? 'ring-2 ring-indigo-400 border-transparent shadow-glow-sm bg-indigo-50/50' : ''}`}
                 >
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <div className={`w-7 h-7 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center shadow-sm`}>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className={`w-6.5 h-6.5 rounded-lg bg-gradient-to-br ${acc.color} flex items-center justify-center shadow-sm`}>
                       <span className="text-xs">{acc.icon}</span>
                     </div>
-                    <span className={`text-xs font-bold ${acc.text} font-mono`}>{acc.role}</span>
+                    <span className={`text-[10px] font-black ${acc.text} font-mono`}>{acc.role}</span>
                   </div>
-                  <div className="text-[10px] text-slate-500 truncate font-mono">{acc.email}</div>
+                  <div className="text-[9px] text-slate-500 truncate font-mono">{acc.email}</div>
                   {selectedDemo === acc.role && (
-                    <div className="text-[9px] text-indigo-500 font-semibold mt-1">✓ Selected</div>
+                    <div className="text-[9px] text-indigo-600 font-bold mt-1">✓ Selected</div>
                   )}
                 </button>
               ))}
             </div>
 
             {selectedDemo && (
-              <p className="text-center text-xs text-slate-500 mt-3 fade-in">
+              <p className="text-center text-[10px] font-medium text-slate-400 mt-3 fade-in">
                 Credentials filled — click <strong>Sign In</strong> to continue
               </p>
             )}

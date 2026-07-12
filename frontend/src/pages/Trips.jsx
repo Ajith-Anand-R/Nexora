@@ -15,7 +15,7 @@ function TripCard({ trip, canDispatch, onDispatch, onStart, onCancel, onComplete
   const s = STATUS_CFG[trip.status] || STATUS_CFG.Pending;
   return (
     <div
-      className="glass rounded-2xl p-5 border border-slate-100 card-3d"
+      className="glass-premium rounded-2xl p-5 card-3d click-tactile hover-spring"
       style={{ animation: `fade-up 0.6s ${index * 35}ms cubic-bezier(0.23,1,0.32,1) both` }}
     >
       {/* Route header */}
@@ -256,7 +256,7 @@ export default function Trips() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="glass rounded-2xl p-5 border border-slate-100">
+            <div key={i} className="glass-premium rounded-2xl p-5">
               <div className="skeleton h-4 w-48 mb-2" />
               <div className="skeleton h-3 w-16 mb-4" />
               <div className="grid grid-cols-2 gap-2 mb-3">{[...Array(4)].map((_, j) => <div key={j} className="skeleton h-10 rounded-xl" />)}</div>
@@ -264,7 +264,7 @@ export default function Trips() {
           ))}
         </div>
       ) : filteredTrips.length === 0 ? (
-        <div className="glass rounded-2xl p-12 border border-slate-100 text-center fade-up">
+        <div className="glass-premium rounded-2xl p-12 text-center fade-up">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-50 flex items-center justify-center">
             <Navigation className="w-8 h-8 text-slate-300" />
           </div>
