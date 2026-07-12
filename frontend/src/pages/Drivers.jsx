@@ -385,6 +385,8 @@ export default function Drivers() {
                       placeholder="100"
                     />
                   </div>
+                </div>
+              </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-slate-800/60">
                 <button
